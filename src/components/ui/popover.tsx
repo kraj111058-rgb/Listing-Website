@@ -87,8 +87,21 @@ function PopoverAnchor({ ...props }: PopoverPrimitive.Arrow.Props) {
   return <PopoverPrimitive.Arrow data-slot="popover-anchor" {...props} />;
 }
 
-function PopoverClose({ ...props }: PopoverPrimitive.Close.Props) {
-  return <PopoverPrimitive.Close data-slot="popover-close" {...props} />;
+function PopoverClose({ asChild, children, ...props }: PopoverPrimitive.Close.Props  & { asChild?: boolean }) {
+  if (asChild && React.isValidElement(children)) {
+    return (
+      <PopoverPrimitive.Close
+        data-slot="popover-close"
+        render={children}
+        {...props}
+      />
+    );
+  }
+  return (
+    <PopoverPrimitive.Close data-slot="popover-close" {...props}>
+      {children}
+    </PopoverPrimitive.Close>
+  );
 }
 
 export {

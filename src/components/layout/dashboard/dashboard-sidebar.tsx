@@ -2,12 +2,12 @@
 
 import { cn } from "@/lib/utils";
 import {
+  ArrowRight,
   Building,
   Building2,
   Globe,
   Inbox,
   LayoutDashboard,
-  LogOut,
   MessageSquareText,
   PlusCircle,
   Sparkles,
@@ -99,7 +99,7 @@ export function DashboardSidebar({ onCloseMobile }: DashboardSidebarProps) {
         </Link>
       </div>
 
-      {/* Navigation Links */}
+      {/* Scrollable Navigation Links Area */}
       <div className="flex-1 px-3.5 py-4 space-y-1 overflow-y-auto">
         <div className="px-3 pb-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
           Main Menu
@@ -146,47 +146,41 @@ export function DashboardSidebar({ onCloseMobile }: DashboardSidebarProps) {
             <span>View Public Website</span>
           </Link>
         </div>
-
-        {/* Upgrade / Promotion Badge Banner */}
-        <div className="mt-6 mx-1 p-3.5 rounded-2xl bg-gradient-to-br from-indigo-500/10 via-fuchsia-500/5 to-transparent border border-indigo-100">
-          <div className="flex items-center gap-2 text-indigo-600 font-bold text-xs">
-            <Sparkles className="w-4 h-4 text-indigo-500 shrink-0" />
-            <span>Boost Your Listings</span>
-          </div>
-          <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
-            Get 5x more inquiries by featuring your verified business!
-          </p>
-          <Link
-            href="/advertise"
-            className="inline-block mt-2 text-xs font-bold text-indigo-600 hover:text-indigo-700 hover:underline"
-          >
-            View Growth Plans &rarr;
-          </Link>
-        </div>
       </div>
 
-      {/* User Footer Profile */}
-      <div className="p-3.5 border-t border-slate-100 bg-slate-50/50">
-        <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-slate-200/70 shadow-2xs">
-          <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
-              RS
+      {/* Pinned Bottom Upgrade / Growth Card */}
+      <div className="p-3.5 border-t border-slate-100 bg-slate-50/50 shrink-0">
+        <div className="p-4 rounded-xl bg-gradient-to-br from-indigo-500/10 via-fuchsia-500/5 to-white border border-indigo-100/90 shadow-2xs relative overflow-hidden group">
+          {/* Subtle Radial Glow */}
+          <div className="absolute -right-4 -bottom-4 size-20 bg-gradient-to-br from-indigo-500/15 to-fuchsia-500/20 rounded-full blur-lg pointer-events-none" />
+
+          {/* Icon & Title */}
+          <div className="flex items-center gap-2.5 mb-2 relative">
+            <div className="size-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-fuchsia-600 flex items-center justify-center text-white shadow-xs shadow-indigo-500/20 shrink-0 group-hover:scale-105 transition-transform">
+              <Sparkles className="size-4 text-white" />
             </div>
-            <div className="flex flex-col truncate">
-              <span className="text-xs font-bold text-slate-900 truncate">
-                Rahul Sharma
-              </span>
-              <span className="text-[11px] text-slate-400 truncate">
-                rahul@business.in
-              </span>
+            <div className="min-w-0">
+              <h4 className="text-xs font-bold text-slate-900 tracking-tight leading-tight truncate">
+                Boost Your Listings
+              </h4>
+              <p className="text-[10px] font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-fuchsia-600 uppercase tracking-wider">
+                Featured Growth
+              </p>
             </div>
           </div>
+
+          <p className="text-[11px] text-slate-500 leading-snug relative">
+            Get up to 5x more customer leads by featuring your verified business!
+          </p>
+
+          {/* Clean Semantic Link Styled as Button */}
           <Link
-            href="/login"
-            title="Sign Out"
-            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0"
+            href="/advertise"
+            onClick={onCloseMobile}
+            className="w-full h-8.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs shadow-indigo-500/20 flex items-center justify-center gap-1.5 transition-all mt-3 relative cursor-pointer"
           >
-            <LogOut className="w-4 h-4" />
+            <span>Explore Plans</span>
+            <ArrowRight className="size-3.5" />
           </Link>
         </div>
       </div>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
+import { AlertModal } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { initialGivenReviews, type GivenReviewItem } from "@/data";
 import { MyReviewsStatsCard } from "./my-reviews-stats-card";
@@ -10,12 +11,16 @@ import { MyReviewsList } from "./my-reviews-list";
 
 export function MyReviewsView() {
   const [reviews, setReviews] = useState<GivenReviewItem[]>(initialGivenReviews);
+  const [deleteReviewId, setDeleteReviewId] = useState<string | null>(null);
 
-  const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete your review?")) {
-      setReviews((prev) => prev.filter((r) => r.id !== id));
+  const confirmDelete = () => {
+    if (deleteReviewId) {
+      setReviews((prev) => prev.filter((r) => r.id !== deleteReviewId));
+      setDeleteReviewId(null);
     }
   };
+
+  const reviewToDelete = reviews.find((r) => r.id === deleteReviewId);
 
   const avgRating =
     reviews.length > 0
@@ -60,7 +65,23 @@ export function MyReviewsView() {
       {/* Reviews List with Search */}
       <MyReviewsList
         reviews={reviews}
-        onDelete={handleDelete}
+        onDelete={(id) => setDeleteReviewId(id)}
+      />
+
+      {/* Delete Confirmation Alert Modal */}
+      <AlertModal
+        open={!!deleteReviewId}
+        onOpenChange={(open) => !open && setDeleteReviewId(null)}
+        title="Delete Review"
+        description={
+          reviewToDelete
+            ? `Are you sure you want to delete your review for "${reviewToDelete.businessName}"? This action cannot be undone.`
+            : "Are you sure you want to delete this review? This action cannot be undone."
+        }
+        confirmLabel="Delete Review"
+        cancelLabel="Cancel"
+        confirmVariant="destructive"
+        onConfirm={confirmDelete}
       />
     </div>
   );

@@ -2,3 +2,7 @@ export * from "./data";
 export * from "./dashboard.data";
 export * from "./blog.data";
 export * from "./inquiries.data";
+export * from "./notifications.data";
+export * from "./profile.data";
+export * from "./location.data";
+export * from "./packages.data";

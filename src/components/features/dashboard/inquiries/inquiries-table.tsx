@@ -288,9 +288,7 @@ export function InquiriesTable({
                     size="sm"
                     onClick={() => {
                       setMenuOpen(false);
-                      if (confirm(`Delete inquiry from ${item.fullName}?`)) {
-                        onDelete(item.id);
-                      }
+                      onDelete(item.id);
                     }}
                     className="w-full justify-start font-semibold gap-2 h-8.5 px-2 hover:bg-rose-50 text-rose-600 hover:text-rose-700 text-xs cursor-pointer"
                   >

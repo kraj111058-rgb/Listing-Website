@@ -12,6 +12,8 @@ export interface TextareaWithLabelProps
   rows?: number;
   containerClassName?: string;
   labelClassName?: string;
+  rightElement?: React.ReactNode;
+  rightElementClassName?: string;
 }
 
 export function TextareaWithLabel({
@@ -24,6 +26,8 @@ export function TextareaWithLabel({
   className,
   containerClassName,
   labelClassName,
+  rightElement,
+  rightElementClassName,
   ...props
 }: TextareaWithLabelProps) {
   const generatedId = React.useId();
@@ -39,18 +43,31 @@ export function TextareaWithLabel({
       className={containerClassName}
       labelClassName={labelClassName}
     >
-      <Textarea
-        id={id}
-        rows={rows}
-        required={required}
-        aria-invalid={!!error}
-        className={cn(
-          "field-sizing-fixed w-full px-4 py-3 rounded-[10px] border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-600 text-sm font-medium transition-all resize-none",
-          error && "border-destructive focus-visible:ring-destructive/20",
-          className
+      <div className="relative w-full">
+        <Textarea
+          id={id}
+          rows={rows}
+          required={required}
+          aria-invalid={!!error}
+          className={cn(
+            "field-sizing-fixed w-full px-4 py-3 rounded-[10px] border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus-visible:ring-2 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-600 text-sm font-medium transition-all resize-none",
+            rightElement && "pb-7 pr-3",
+            error && "border-destructive focus-visible:ring-destructive/20",
+            className
+          )}
+          {...props}
+        />
+        {rightElement && (
+          <div
+            className={cn(
+              "absolute right-3 bottom-2.5 flex items-center justify-center pointer-events-none select-none",
+              rightElementClassName
+            )}
+          >
+            {rightElement}
+          </div>
         )}
-        {...props}
-      />
+      </div>
     </FieldWrapper>
   );
 }

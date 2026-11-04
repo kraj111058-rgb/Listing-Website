@@ -5,3 +5,5 @@ export * from "./inquiries";
 export * from "./customer-reviews";
 export * from "./my-reviews";
 export * from "./listing-services-manager";
+export * from "./notifications";
+export * from "./profile";

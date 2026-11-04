@@ -1,86 +1,108 @@
 "use client";
 
+import { useMemo, useState } from "react";
+import { Controller, useFormContext, useWatch } from "react-hook-form";
+import {
+  CheckCircle2,
+  ExternalLink,
+  Loader2,
+  MapPin,
+} from "lucide-react";
 import {
   InputWithLabel,
   SelectWithLabel,
 } from "@/components/common";
-import { daysOfWeek } from "@/data";
+import { Button } from "@/components/ui/button";
+import { FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
+import { Switch } from "@/components/ui/switch";
+import { daysOfWeek, INDIAN_STATES, getCitiesByState } from "@/data";
+import type { ListingWizardFormValues } from "@/schemas";
+import Link from "next/link";
 
-interface Step2ContactLocationProps {
-  data: {
-    state: string;
-    city: string;
-    address: string;
-    pincode: string;
-    latitude: string;
-    longitude: string;
-    phone: string;
-    secondaryPhone: string;
-    email: string;
-    website: string;
-    is24x7: boolean;
-    openTime: string;
-    closeTime: string;
-    closedDays: string[];
-  };
-  onChange: (field: string, value: any) => void;
-}
-
-const indianStates = [
-  "Andhra Pradesh",
-  "Arunachal Pradesh",
-  "Assam",
-  "Bihar",
-  "Chhattisgarh",
-  "Goa",
-  "Gujarat",
-  "Haryana",
-  "Himachal Pradesh",
-  "Jharkhand",
-  "Karnataka",
-  "Kerala",
-  "Madhya Pradesh",
-  "Maharashtra",
-  "Manipur",
-  "Meghalaya",
-  "Mizoram",
-  "Nagaland",
-  "Odisha",
-  "Punjab",
-  "Rajasthan",
-  "Sikkim",
-  "Tamil Nadu",
-  "Telangana",
-  "Tripura",
-  "Uttar Pradesh",
-  "Uttarakhand",
-  "West Bengal",
-  "Delhi",
-];
-
-const stateCitiesMap: Record<string, string[]> = {
-  "Andhra Pradesh": ["Adoni", "Amaravati", "Guntur", "Kakinada", "Kurnool", "Nellore", "Rajahmundry", "Tirupati", "Vijayawada", "Visakhapatnam"],
-  "Delhi": ["Central Delhi", "East Delhi", "New Delhi", "North Delhi", "South Delhi", "West Delhi"],
-  "Gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Bhavnagar", "Jamnagar", "Gandhinagar"],
-  "Karnataka": ["Bengaluru", "Mysuru", "Hubballi", "Mangaluru", "Belagavi", "Davangere"],
-  "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Thane", "Nashik", "Aurangabad", "Navi Mumbai"],
-  "Rajasthan": ["Jaipur", "Jodhpur", "Udaipur", "Kota", "Bikaner", "Ajmer", "Bhilwara"],
-  "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", "Tirunelveli"],
-  "Uttar Pradesh": ["Lucknow", "Kanpur", "Varanasi", "Agra", "Noida", "Prayagraj", "Ghaziabad"],
-  "West Bengal": ["Kolkata", "Howrah", "Durgapur", "Asansol", "Siliguri"],
+const cleanCoordinate = (val: string) => {
+  const hasMinus = val.startsWith("-");
+  let sanitized = val.replace(/[^0-9.]/g, "");
+  const parts = sanitized.split(".");
+  if (parts.length > 2) {
+    sanitized = parts[0] + "." + parts.slice(1).join("");
+  }
+  return (hasMinus ? "-" : "") + sanitized;
 };
 
-export function Step2ContactLocation({
-  data,
-  onChange,
-}: Step2ContactLocationProps) {
-  const currentCities = stateCitiesMap[data.state] || [
-    "Adoni",
-    "Jaipur",
-    "Mumbai",
-    "Delhi",
-    "Bengaluru",
-  ];
+export function Step2ContactLocation() {
+  const { control, setValue } = useFormContext<ListingWizardFormValues>();
+
+  const [isLocating, setIsLocating] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
+
+  const currentState = useWatch({ control, name: "state" }) || "";
+  const is24x7 = useWatch({ control, name: "is24x7" }) ?? false;
+  const latitude = useWatch({ control, name: "latitude" }) || "";
+  const longitude = useWatch({ control, name: "longitude" }) || "";
+
+  const currentCities = useMemo(() => getCitiesByState(currentState), [currentState]);
+
+  const hasValidCoordinates = useMemo(() => {
+    const lat = Number(latitude);
+    const lng = Number(longitude);
+    return (
+      latitude.trim() !== "" &&
+      longitude.trim() !== "" &&
+      !isNaN(lat) &&
+      !isNaN(lng) &&
+      lat >= -90 &&
+      lat <= 90 &&
+      lng >= -180 &&
+      lng <= 180
+    );
+  }, [latitude, longitude]);
+
+  const handleGetCurrentLocation = () => {
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      setLocationError("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    setIsLocating(true);
+    setLocationError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude.toFixed(6);
+        const lng = position.coords.longitude.toFixed(6);
+
+        setValue("latitude", lat, { shouldValidate: true, shouldDirty: true });
+        setValue("longitude", lng, { shouldValidate: true, shouldDirty: true });
+
+        setIsLocating(false);
+      },
+      (error) => {
+        setIsLocating(false);
+        if (error.code === error.PERMISSION_DENIED) {
+          setLocationError(
+            "Location permission was denied. Please allow location access or enter coordinates manually."
+          );
+        } else if (error.code === error.POSITION_UNAVAILABLE) {
+          setLocationError(
+            "Location information is unavailable. Please enter coordinates manually."
+          );
+        } else if (error.code === error.TIMEOUT) {
+          setLocationError(
+            "Location request timed out. Please try again or enter coordinates manually."
+          );
+        } else {
+          setLocationError(
+            "Unable to retrieve location. Please enter coordinates manually."
+          );
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
+  };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -93,196 +115,389 @@ export function Step2ContactLocation({
       <div className="space-y-4">
         {/* State & City (2 columns) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <SelectWithLabel
-            id="biz-state"
-            label="State"
-            required
-            placeholder="Select State"
-            value={data.state}
-            onValueChange={(newState) => {
-              onChange("state", newState);
-              if (stateCitiesMap[newState]?.length) {
-                onChange("city", stateCitiesMap[newState][0]);
-              }
-            }}
-            options={indianStates.map((st) => ({ value: st, label: st }))}
+          <Controller
+            name="state"
+            control={control}
+            render={({ field, fieldState: { error } }) => (
+              <SelectWithLabel
+                id="biz-state"
+                label="State"
+                placeholder="Select State"
+                value={field.value}
+                onValueChange={(newState) => {
+                  field.onChange(newState);
+                  const cities = getCitiesByState(newState);
+                  if (cities.length > 0) {
+                    setValue("city", cities[0], {
+                      shouldValidate: true,
+                    });
+                  } else {
+                    setValue("city", "", { shouldValidate: true });
+                  }
+                }}
+                options={INDIAN_STATES.map((st) => ({
+                  value: st.name,
+                  label: st.name,
+                }))}
+                error={error?.message}
+              />
+            )}
           />
 
-          <SelectWithLabel
-            id="biz-city"
-            label="City"
-            required
-            placeholder="Select City"
-            value={data.city}
-            onValueChange={(city) => onChange("city", city)}
-            options={currentCities.map((c) => ({ value: c, label: c }))}
+          <Controller
+            name="city"
+            control={control}
+            render={({ field, fieldState: { error } }) => {
+              const options =
+                field.value && !currentCities.includes(field.value)
+                  ? [field.value, ...currentCities]
+                  : currentCities;
+
+              return (
+                <SelectWithLabel
+                  id="biz-city"
+                  label="City"
+                  placeholder="Select City"
+                  value={field.value}
+                  onValueChange={(city) => field.onChange(city)}
+                  options={options.map((c) => ({ value: c, label: c }))}
+                  error={error?.message}
+                />
+              );
+            }}
           />
         </div>
 
         {/* Full Address */}
-        <InputWithLabel
-          id="biz-address"
-          label="Full Address"
-          placeholder="Shop/Office address"
-          value={data.address}
-          onChange={(e) => onChange("address", e.target.value)}
+        <Controller
+          name="address"
+          control={control}
+          render={({ field, fieldState: { error } }) => (
+            <InputWithLabel
+              id="biz-address"
+              label="Full Address"
+              placeholder="Shop/Office address"
+              {...field}
+              error={error?.message}
+            />
+          )}
         />
 
         {/* Pincode */}
-        <InputWithLabel
-          id="biz-pincode"
-          label="Pincode"
-          placeholder="e.g. 110001"
-          value={data.pincode}
-          onChange={(e) => onChange("pincode", e.target.value)}
+        <Controller
+          name="pincode"
+          control={control}
+          render={({ field, fieldState: { error } }) => (
+            <InputWithLabel
+              id="biz-pincode"
+              label="Pincode"
+              maxLength={6}
+              placeholder="e.g. 110001"
+              {...field}
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^0-9]/g, "");
+                field.onChange(value);
+              }}
+              error={error?.message}
+            />
+          )}
         />
 
-        {/* Latitude & Longitude (2 columns) */}
-        <div className="space-y-1.5">
+        {/* Latitude & Longitude (Map Coordinates) */}
+        <div className="space-y-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <FieldLabel className="text-xs sm:text-sm font-bold text-slate-700 select-none block">
+                Map Coordinates (GPS)
+              </FieldLabel>
+              <FieldDescription className="text-xs text-slate-500 mt-0.5">
+                Enter latitude & longitude manually or auto-detect with your device.
+              </FieldDescription>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isLocating}
+              onClick={handleGetCurrentLocation}
+              className="self-start sm:self-auto h-8 px-2.5 rounded-lg font-medium text-indigo-600 border-indigo-200 bg-indigo-50/50 hover:bg-indigo-100 hover:text-indigo-700 gap-1.5 cursor-pointer shrink-0 transition-colors"
+            >
+              {isLocating ? (
+                <>
+                  <Loader2 className="size-3.5 animate-spin text-indigo-600" />
+                  <span>Detecting...</span>
+                </>
+              ) : (
+                <>
+                  <MapPin className="size-3.5 text-indigo-600" />
+                  <span>Use Current Location</span>
+                </>
+              )}
+            </Button>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <InputWithLabel
-              id="biz-latitude"
-              label="Latitude (Google Maps)"
-              placeholder="e.g. 28.7041"
-              value={data.latitude}
-              onChange={(e) => onChange("latitude", e.target.value)}
+            <Controller
+              name="latitude"
+              control={control}
+              render={({ field, fieldState: { error } }) => (
+                <InputWithLabel
+                  id="biz-latitude"
+                  label="Latitude"
+                  placeholder="e.g. 21.234440"
+                  {...field}
+                  onChange={(e) => field.onChange(cleanCoordinate(e.target.value))}
+                  error={error?.message}
+                />
+              )}
             />
 
-            <InputWithLabel
-              id="biz-longitude"
-              label="Longitude (Google Maps)"
-              placeholder="e.g. 77.1025"
-              value={data.longitude}
-              onChange={(e) => onChange("longitude", e.target.value)}
+            <Controller
+              name="longitude"
+              control={control}
+              render={({ field, fieldState: { error } }) => (
+                <InputWithLabel
+                  id="biz-longitude"
+                  label="Longitude"
+                  placeholder="e.g. 72.911747"
+                  {...field}
+                  onChange={(e) => field.onChange(cleanCoordinate(e.target.value))}
+                  error={error?.message}
+                />
+              )}
             />
           </div>
-          <p className="text-[11px] text-slate-400">
-            Right-click on Google Maps and click the coordinates to copy them.
+
+          {/* Map Pin Verified Status Card */}
+          {hasValidCoordinates && (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 rounded-xl bg-emerald-50/80 border border-emerald-200/80 text-emerald-900 transition-all animate-in fade-in slide-in-from-top-1 duration-200">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="size-7 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="size-4 text-emerald-600" />
+                </div>
+                <div className="text-xs">
+                  <span className="font-semibold text-emerald-900">Map Pin Set:</span>{" "}
+                  <span className="font-mono text-emerald-800 font-medium">
+                    {latitude}, {longitude}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 self-start sm:self-auto">
+                <Link
+                  href={`https://www.google.com/maps?q=${latitude},${longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 hover:text-emerald-950 bg-white px-2.5 py-1.5 rounded-lg border border-emerald-200/90 shadow-2xs hover:shadow-xs transition-all w-fit cursor-pointer"
+                >
+                  <span>Verify on Google Maps</span>
+                  <ExternalLink className="size-3 text-emerald-600" />
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setValue("latitude", "", { shouldValidate: true, shouldDirty: true });
+                    setValue("longitude", "", { shouldValidate: true, shouldDirty: true });
+                  }}
+                  className="text-xs font-medium text-slate-500 hover:text-rose-600 px-2 py-1 transition-colors cursor-pointer hover:underline"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+          )}
+
+          {locationError && (
+            <FieldError className="p-2.5 rounded-lg bg-rose-50 border border-rose-200">{locationError}</FieldError>
+          )}
+
+          <p className="text-xs text-muted-foreground font-medium">
+            <span className="text-foreground">Tip : </span> Right-click your business on Google Maps to copy coordinates, or click &ldquo;Use Current Location&rdquo; above.
           </p>
         </div>
 
         {/* Phone Number & Secondary Phone (2 columns) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <InputWithLabel
-            id="biz-phone"
-            label="Phone Number"
-            required
-            type="tel"
-            placeholder="+91 92438 37806"
-            value={data.phone}
-            onChange={(e) => onChange("phone", e.target.value)}
+          <Controller
+            name="phone"
+            control={control}
+            render={({ field, fieldState: { error } }) => (
+              <InputWithLabel
+                id="biz-phone"
+                label="Phone Number"
+                type="tel"
+                placeholder="e.g. 98765 43210"
+                {...field}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, "");
+                  field.onChange(value);
+                }}
+                error={error?.message}
+              />
+            )}
           />
 
-          <InputWithLabel
-            id="biz-secondary-phone"
-            label="Secondary Phone"
-            type="tel"
-            placeholder="+91 Optional"
-            value={data.secondaryPhone}
-            onChange={(e) => onChange("secondaryPhone", e.target.value)}
+          <Controller
+            name="secondaryPhone"
+            control={control}
+            render={({ field, fieldState: { error } }) => (
+              <InputWithLabel
+                id="biz-secondary-phone"
+                label="Secondary Phone (optional)"
+                type="tel"
+                placeholder="e.g. 98765 43210"
+                {...field}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, "");
+                  field.onChange(value);
+                }}
+                error={error?.message}
+              />
+            )}
           />
         </div>
 
         {/* Email */}
-        <InputWithLabel
-          id="biz-email"
-          label="Email"
-          type="email"
-          placeholder="business@email.com"
-          value={data.email}
-          onChange={(e) => onChange("email", e.target.value)}
+        <Controller
+          name="email"
+          control={control}
+          render={({ field, fieldState: { error } }) => (
+            <InputWithLabel
+              id="biz-email"
+              label="Email"
+              type="email"
+              placeholder="business@email.com"
+              {...field}
+              error={error?.message}
+            />
+          )}
         />
 
         {/* Website */}
-        <InputWithLabel
-          id="biz-website"
-          label="Website"
-          type="url"
-          placeholder="https://yourbusiness.com"
-          value={data.website}
-          onChange={(e) => onChange("website", e.target.value)}
+        <Controller
+          name="website"
+          control={control}
+          render={({ field, fieldState: { error } }) => (
+            <InputWithLabel
+              id="biz-website"
+              label="Website (optional)"
+              type="url"
+              placeholder="https://yourbusiness.com"
+              {...field}
+              error={error?.message}
+            />
+          )}
         />
 
         {/* Business Hours - Toggle + Open/Close + Weekly Off */}
         <div className="pt-2 space-y-4">
-          <label className="text-xs sm:text-sm font-bold text-slate-700 select-none block">
+          <FieldLabel className="text-xs sm:text-sm font-semibold">
             Business Timing & Hours
-          </label>
+          </FieldLabel>
 
           {/* 24x7 Toggle */}
-          <div className="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-100 flex items-center justify-between">
-            <div>
-              <h4 className="text-xs font-bold text-slate-900">
-                Open 24 Hours / 7 Days a Week?
-              </h4>
-              <p className="text-[11px] text-slate-500 mt-0.5">
-                Ideal for hospitals, hotels, emergency services, or 24/7 pharmacies.
-              </p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={data.is24x7}
-                onChange={(e) => onChange("is24x7", e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-            </label>
-          </div>
+          <Controller
+            name="is24x7"
+            control={control}
+            render={({ field }) => (
+              <div className="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-100 flex items-center justify-between gap-4">
+                <div className="space-y-0.5">
+                  <FieldLabel
+                    htmlFor="biz-24x7"
+                    className="text-xs font-bold text-slate-900 cursor-pointer block"
+                  >
+                    Open 24 Hours / 7 Days a Week?
+                  </FieldLabel>
+                  <FieldDescription className="text-[11px] text-slate-500 leading-normal">
+                    Ideal for hospitals, hotels, emergency services, or 24/7 pharmacies.
+                  </FieldDescription>
+                </div>
+                <Switch
+                  id="biz-24x7"
+                  checked={!!field.value}
+                  onCheckedChange={field.onChange}
+                  className="data-checked:bg-indigo-600 cursor-pointer"
+                />
+              </div>
+            )}
+          />
 
-          {!data.is24x7 && (
+          {!is24x7 && (
             <div className="space-y-4 pt-1">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <InputWithLabel
-                  id="biz-opentime"
-                  label="Daily Opening Time"
-                  type="time"
-                  value={data.openTime}
-                  onChange={(e) => onChange("openTime", e.target.value)}
+                <Controller
+                  name="openTime"
+                  control={control}
+                  render={({ field, fieldState: { error } }) => (
+                    <InputWithLabel
+                      id="biz-opentime"
+                      label="Daily Opening Time"
+                      type="time"
+                      {...field}
+                      error={error?.message}
+                    />
+                  )}
                 />
 
-                <InputWithLabel
-                  id="biz-closetime"
-                  label="Daily Closing Time"
-                  type="time"
-                  value={data.closeTime}
-                  onChange={(e) => onChange("closeTime", e.target.value)}
+                <Controller
+                  name="closeTime"
+                  control={control}
+                  render={({ field, fieldState: { error } }) => (
+                    <InputWithLabel
+                      id="biz-closetime"
+                      label="Daily Closing Time"
+                      type="time"
+                      {...field}
+                      error={error?.message}
+                    />
+                  )}
                 />
               </div>
 
-              <div>
-                <label className="text-xs sm:text-sm font-bold text-slate-700 select-none block mb-2">
-                  Weekly Off Days (Closed Days)
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {daysOfWeek.map((day) => {
-                    const isOff = data.closedDays.includes(day);
-                    return (
-                      <button
-                        key={day}
-                        type="button"
-                        onClick={() => {
-                          if (isOff) {
-                            onChange(
-                              "closedDays",
-                              data.closedDays.filter((d) => d !== day)
-                            );
-                          } else {
-                            onChange("closedDays", [...data.closedDays, day]);
-                          }
-                        }}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer border ${
-                          isOff
-                            ? "bg-rose-50 border-rose-200 text-rose-700"
-                            : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
-                        }`}
-                      >
-                        {day} {isOff && "(Closed)"}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+              {/* Weekly Off Days with Controller and FieldLabel */}
+              <Controller
+                name="closedDays"
+                control={control}
+                render={({ field, fieldState: { error } }) => {
+                  const selectedDays: string[] = field.value || [];
+
+                  const toggleDay = (day: string) => {
+                    const next = selectedDays.includes(day)
+                      ? selectedDays.filter((d) => d !== day)
+                      : [...selectedDays, day];
+                    field.onChange(next);
+                  };
+
+                  return (
+                    <div className="space-y-2">
+                      <FieldLabel className="text-xs sm:text-sm font-bold text-slate-700 select-none block">
+                        Weekly Off Days (Closed Days)
+                      </FieldLabel>
+                      <div className="flex flex-wrap gap-2">
+                        {daysOfWeek.map((day) => {
+                          const isOff = selectedDays.includes(day);
+                          return (
+                            <button
+                              key={day}
+                              type="button"
+                              onClick={() => toggleDay(day)}
+                              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer border ${isOff
+                                  ? "bg-rose-50 border-rose-200 text-rose-700"
+                                  : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
+                                }`}
+                            >
+                              {day} {isOff && "(Closed)"}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {error && <FieldError>{error.message}</FieldError>}
+                    </div>
+                  );
+                }}
+              />
             </div>
           )}
         </div>

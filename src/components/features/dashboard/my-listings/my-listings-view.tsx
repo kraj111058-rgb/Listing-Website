@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { PlusCircle } from "lucide-react";
+import { AlertModal } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { initialUserListings, type UserListingItem } from "@/data";
 import { MyListingsFilters, type StatusTabItem } from "./my-listings-filters";
@@ -13,6 +14,7 @@ export function MyListingsView() {
   const [listings, setListings] = useState<UserListingItem[]>(initialUserListings);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
+  const [deleteListingId, setDeleteListingId] = useState<string | null>(null);
 
   const toggleActive = (id: string) => {
     setListings((prev) =>
@@ -26,11 +28,14 @@ export function MyListingsView() {
     );
   };
 
-  const deleteListing = (id: string) => {
-    if (confirm("Are you sure you want to delete this listing?")) {
-      setListings((prev) => prev.filter((item) => item.id !== id));
+  const confirmDeleteListing = () => {
+    if (deleteListingId) {
+      setListings((prev) => prev.filter((item) => item.id !== deleteListingId));
+      setDeleteListingId(null);
     }
   };
+
+  const listingToDelete = listings.find((item) => item.id === deleteListingId);
 
   const filteredListings = listings.filter((item) => {
     const matchesSearch =
@@ -96,9 +101,25 @@ export function MyListingsView() {
         <MyListingsTable
           data={filteredListings}
           onToggleActive={toggleActive}
-          onDelete={deleteListing}
+          onDelete={(id) => setDeleteListingId(id)}
         />
       )}
+
+      {/* Delete Confirmation Alert Modal */}
+      <AlertModal
+        open={!!deleteListingId}
+        onOpenChange={(open) => !open && setDeleteListingId(null)}
+        title="Delete Business Listing"
+        description={
+          listingToDelete
+            ? `Are you sure you want to delete "${listingToDelete.name}"? All associated inquiries, reviews, and catalog data will be permanently removed.`
+            : "Are you sure you want to delete this listing? This action cannot be undone."
+        }
+        confirmLabel="Delete Listing"
+        cancelLabel="Cancel"
+        confirmVariant="destructive"
+        onConfirm={confirmDeleteListing}
+      />
     </div>
   );
 }

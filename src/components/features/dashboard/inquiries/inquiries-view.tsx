@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { AlertModal } from "@/components/common";
 import {
   getStoredInquiries,
   updateCustomerInquiryStatus,
@@ -18,6 +19,7 @@ export function InquiriesView() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [activeInquiry, setActiveInquiry] = useState<CustomerInquiryItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deleteInquiryId, setDeleteInquiryId] = useState<string | null>(null);
 
   // Sync inquiries state
   useEffect(() => {
@@ -45,14 +47,19 @@ export function InquiriesView() {
   };
 
   // Handle delete
-  const handleDelete = (id: string) => {
-    deleteCustomerInquiry(id);
-    setInquiries((prev) => prev.filter((item) => item.id !== id));
-    if (activeInquiry && activeInquiry.id === id) {
-      setIsModalOpen(false);
-      setActiveInquiry(null);
+  const confirmDeleteInquiry = () => {
+    if (deleteInquiryId) {
+      deleteCustomerInquiry(deleteInquiryId);
+      setInquiries((prev) => prev.filter((item) => item.id !== deleteInquiryId));
+      if (activeInquiry && activeInquiry.id === deleteInquiryId) {
+        setIsModalOpen(false);
+        setActiveInquiry(null);
+      }
+      setDeleteInquiryId(null);
     }
   };
+
+  const inquiryToDelete = inquiries.find((item) => item.id === deleteInquiryId);
 
   // Filtered inquiries
   const filteredInquiries = useMemo(() => {
@@ -147,7 +154,7 @@ export function InquiriesView() {
           data={filteredInquiries}
           onViewDetails={handleOpenDetails}
           onStatusChange={handleStatusChange}
-          onDelete={handleDelete}
+          onDelete={(id) => setDeleteInquiryId(id)}
         />
       )}
 
@@ -156,6 +163,22 @@ export function InquiriesView() {
         inquiry={activeInquiry}
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
+      />
+
+      {/* Delete Confirmation Alert Modal */}
+      <AlertModal
+        open={!!deleteInquiryId}
+        onOpenChange={(open) => !open && setDeleteInquiryId(null)}
+        title="Delete Customer Inquiry"
+        description={
+          inquiryToDelete
+            ? `Are you sure you want to delete the inquiry from ${inquiryToDelete.fullName}? This action cannot be undone.`
+            : "Are you sure you want to delete this customer inquiry? This action cannot be undone."
+        }
+        confirmLabel="Delete Inquiry"
+        cancelLabel="Cancel"
+        confirmVariant="destructive"
+        onConfirm={confirmDeleteInquiry}
       />
     </div>
   );

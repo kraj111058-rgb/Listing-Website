@@ -5,3 +5,5 @@ export * from "./register-form.schema";
 export * from "./forgot-password-form.schema";
 export * from "./reset-password-form.schema";
 export * from "./listing-inquiry-form.schema";
+export * from "./profile-form.schema";
+export * from "./listing-wizard-form.schema";

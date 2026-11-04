@@ -3,8 +3,15 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, ArrowLeft, CheckCircle2, Loader2, Check } from "lucide-react";
+import { ArrowRight, ArrowLeft, Loader2, Check } from "lucide-react";
+import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
+import {
+  listingWizardSchema,
+  stepFieldsMap,
+  type ListingWizardFormValues,
+} from "@/schemas";
 import {
   StepperHeader,
   Step1BasicInfo,
@@ -20,19 +27,11 @@ interface ListingFormWizardProps {
   listingId?: string;
 }
 
-export function ListingFormWizard({
-  mode = "create",
-  listingId,
-}: ListingFormWizardProps) {
-  const router = useRouter();
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
-  // Form State matching all 5 steps
-  const [formData, setFormData] = useState({
+function getDefaultListingValues(mode: "create" | "edit"): ListingWizardFormValues {
+  return {
     // Step 1: Basic Information
     name: mode === "edit" ? "Royal Palace Heritage Hotel & Resort" : "",
+    slug: mode === "edit" ? "royal-palace-heritage-hotel-resort" : "",
     category: mode === "edit" ? "Hotels & Travel" : "",
     shortDescription:
       mode === "edit"
@@ -45,11 +44,11 @@ export function ListingFormWizard({
     established: mode === "edit" ? "2015" : "",
     employees: mode === "edit" ? "21-50" : "",
     gstin: mode === "edit" ? "08AAACR1234F1Z5" : "",
-    tags: mode === "edit" ? ["hotel", "luxury", "jaipur"] : ["hotel"],
+    tags: mode === "edit" ? ["hotel", "luxury", "jaipur"] : [],
 
     // Step 2: Location & Contact + Business Hours
-    state: mode === "edit" ? "Rajasthan" : "Andhra Pradesh",
-    city: mode === "edit" ? "Jaipur" : "Adoni",
+    state: mode === "edit" ? "Rajasthan" : "",
+    city: mode === "edit" ? "Jaipur" : "",
     address: mode === "edit" ? "Palace Road, Near City Palace" : "",
     pincode: mode === "edit" ? "302002" : "",
     latitude: mode === "edit" ? "28.7041" : "",
@@ -59,9 +58,9 @@ export function ListingFormWizard({
     email: mode === "edit" ? "business@email.com" : "",
     website: mode === "edit" ? "https://yourbusiness.com" : "",
     is24x7: mode === "edit" ? true : false,
-    openTime: "09:00",
-    closeTime: "18:00",
-    closedDays: ["Sunday"],
+    openTime: "",
+    closeTime: "",
+    closedDays: [""],
 
     // Step 3: Photos & Social Links
     logo:
@@ -95,17 +94,39 @@ export function ListingFormWizard({
       mode === "edit" ? "hotel jaipur, royal palace, heritage resort" : "",
 
     // Step 5: Choose Plan
-    selectedPlan: "free" as "free" | "featured",
+    selectedPlan: "free",
+  };
+}
+
+export function ListingFormWizard({
+  mode = "create",
+  listingId,
+}: ListingFormWizardProps) {
+  const router = useRouter();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const methods = useForm<ListingWizardFormValues>({
+    resolver: zodResolver(listingWizardSchema),
+    mode: "onChange",
+    defaultValues: getDefaultListingValues(mode),
   });
 
-  const handleInputChange = (field: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+  const {
+    handleSubmit,
+    trigger,
+    formState: { isSubmitting },
+  } = methods;
 
-  const handleNext = (e?: React.MouseEvent) => {
+  const handleNext = async (e?: React.MouseEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
+    }
+    const fieldsToValidate = stepFieldsMap[currentStep];
+    const isStepValid = await trigger(fieldsToValidate);
+    if (!isStepValid) {
+      return;
     }
     if (currentStep < 5) {
       setCurrentStep((prev) => prev + 1);
@@ -124,23 +145,15 @@ export function ListingFormWizard({
     }
   };
 
-  const handleSubmit = async (e?: React.FormEvent) => {
-    if (e) {
-      e.preventDefault();
-    }
-    // Safeguard: Never submit unless the user is on Step 5
+  const onSubmit = async (_values: ListingWizardFormValues) => {
     if (currentStep < 5) {
-      handleNext();
+      await handleNext();
       return;
     }
 
-    setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 900));
-    setIsSubmitting(false);
+    await new Promise((resolve) => setTimeout(resolve, 800));
     setIsSubmitted(true);
-    setTimeout(() => {
-      router.push("/dashboard/my-listings");
-    }, 1500);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   if (isSubmitted) {
@@ -148,7 +161,7 @@ export function ListingFormWizard({
   }
 
   return (
-    <div className="w-full space-y-6 pb-12">
+    <div className="w-full space-y-6">
       {/* Title & Navigation Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -171,107 +184,82 @@ export function ListingFormWizard({
         </Link>
       </div>
 
-      {/* Stepper Header (1 to 5) - Visual progress tracker (step cannot be changed by clicking on top) */}
+      {/* Stepper Header (1 to 5) - Visual progress tracker */}
       <StepperHeader currentStep={currentStep} />
 
       {/* Step Form Body */}
       <div className="bg-white rounded-3xl border border-slate-200/80 p-6 sm:p-8 shadow-2xs">
-        <form
-          onSubmit={handleSubmit}
-          onKeyDown={(e) => {
-            if (
-              e.key === "Enter" &&
-              (e.target as HTMLElement).tagName !== "TEXTAREA"
-            ) {
-              e.preventDefault();
-              if (currentStep < 5) {
-                handleNext();
+        <FormProvider {...methods}>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            onKeyDown={(e) => {
+              if (
+                e.key === "Enter" &&
+                (e.target as HTMLElement).tagName !== "TEXTAREA"
+              ) {
+                e.preventDefault();
+                if (currentStep < 5) {
+                  handleNext();
+                }
               }
-            }
-          }}
-        >
-          {currentStep === 1 && (
-            <Step1BasicInfo data={formData} onChange={handleInputChange} />
-          )}
+            }}
+          >
+            {currentStep === 1 && <Step1BasicInfo />}
+            {currentStep === 2 && <Step2ContactLocation />}
+            {currentStep === 3 && <Step3PhotosSocial />}
+            {currentStep === 4 && <Step4SeoDetails />}
+            {currentStep === 5 && <Step5ChoosePlan />}
 
-          {currentStep === 2 && (
-            <Step2ContactLocation
-              data={formData}
-              onChange={handleInputChange}
-            />
-          )}
+            {/* Stepper Footer Buttons */}
+            <div className="pt-6 mt-6 border-t border-slate-100 flex items-center justify-between gap-3">
+              {currentStep > 1 ? (
+                <Button
+                  key="wizard-prev-btn"
+                  type="button"
+                  variant="outline"
+                  onClick={handlePrev}
+                  className="h-11 px-5 rounded-[10px] border-slate-200 text-xs sm:text-sm font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer flex items-center gap-2"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>Previous</span>
+                </Button>
+              ) : (
+                <div />
+              )}
 
-          {currentStep === 3 && (
-            <Step3PhotosSocial
-              data={formData}
-              onChange={handleInputChange}
-            />
-          )}
-
-          {currentStep === 4 && (
-            <Step4SeoDetails
-              data={formData}
-              onChange={handleInputChange}
-            />
-          )}
-
-          {currentStep === 5 && (
-            <Step5ChoosePlan
-              data={formData}
-              onChange={handleInputChange}
-            />
-          )}
-
-          {/* Stepper Footer Buttons */}
-          <div className="pt-6 mt-6 border-t border-slate-100 flex items-center justify-between gap-3">
-            {currentStep > 1 ? (
-              <Button
-                key="wizard-prev-btn"
-                type="button"
-                variant="outline"
-                onClick={handlePrev}
-                className="h-11 px-5 rounded-[10px] border-slate-200 text-xs sm:text-sm font-semibold text-slate-700 hover:bg-slate-50 cursor-pointer flex items-center gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Previous</span>
-              </Button>
-            ) : (
-              <div />
-            )}
-
-            {currentStep < 5 ? (
-              <Button
-                key="wizard-next-btn"
-                type="button"
-                onClick={handleNext}
-                className="h-11 px-6 rounded-[10px] bg-[#5c67f2] hover:bg-[#4f59e0] text-white font-semibold text-xs sm:text-sm shadow-md shadow-indigo-500/20 cursor-pointer flex items-center gap-2"
-              >
-                <span>Next</span>
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            ) : (
-              <Button
-                key="wizard-submit-btn"
-                type="button"
-                disabled={isSubmitting}
-                onClick={handleSubmit}
-                className="h-11 px-7 rounded-[10px] bg-[#5c67f2] hover:bg-[#4f59e0] text-white font-semibold text-xs sm:text-sm shadow-md shadow-indigo-500/20 cursor-pointer flex items-center gap-2"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Submitting Listing...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Submit for Review</span>
-                    <Check className="w-4 h-4 stroke-[2.5]" />
-                  </>
-                )}
-              </Button>
-            )}
-          </div>
-        </form>
+              {currentStep < 5 ? (
+                <Button
+                  key="wizard-next-btn"
+                  type="button"
+                  onClick={handleNext}
+                  className="h-11 px-5 rounded-[10px] bg-[#5c67f2] hover:bg-[#4f59e0] text-white font-semibold text-xs sm:text-sm shadow-md shadow-indigo-500/20 cursor-pointer flex items-center gap-2"
+                >
+                  <span>Next</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              ) : (
+                <Button
+                  key="wizard-submit-btn"
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="h-11 px-5 rounded-[10px] bg-[#5c67f2] hover:bg-[#4f59e0] text-white font-semibold text-xs sm:text-sm shadow-md shadow-indigo-500/20 cursor-pointer flex items-center gap-2"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Submitting Listing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-4 h-4 stroke-[2.5]" />
+                      <span>Submit</span>
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          </form>
+        </FormProvider>
       </div>
     </div>
   );

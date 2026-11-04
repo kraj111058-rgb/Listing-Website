@@ -12,8 +12,8 @@ export const registerFormSchema = z
       .email("Please enter a valid email address"),
     phone: z
       .string()
-      .min(10, "Phone number must be at least 10 digits")
-      .regex(/^[0-9+\s-]{10,15}$/, "Please enter a valid phone number"),
+      .min(1, "Phone number is required")
+      .regex(/^[0-9]{10}$/, "Please enter a valid phone number (at least 10 digits)"),
     password: z
       .string()
       .min(6, "Password must be at least 6 characters"),

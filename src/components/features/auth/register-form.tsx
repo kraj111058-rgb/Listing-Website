@@ -106,6 +106,10 @@ export function RegisterForm() {
                 error={errors.phone?.message}
                 disabled={isSubmitting}
                 {...field}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, "");
+                  field.onChange(value);
+                }}
               />
             )}
           />

@@ -10,4 +10,8 @@ export * from "./textarea-with-label";
 export * from "./data-table";
 export * from "./popover-menu";
 export * from "./modal";
+export * from "./alert-modal";
+export * from "./user-avatar";
 export * from "./scroll-to-top";
+export * from "./image-upload";
+export * from "./gallery-upload";

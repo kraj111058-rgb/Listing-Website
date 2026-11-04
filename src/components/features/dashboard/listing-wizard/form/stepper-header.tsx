@@ -73,13 +73,12 @@ export function StepperHeader({
             const isCompleted = currentStep > step.id;
             const Icon = step.icon;
 
-            const pillClasses = `shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all select-none ${
-              isCurrent
+            const pillClasses = `shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all select-none ${isCurrent
                 ? "bg-indigo-600 text-white shadow-xs"
                 : isCompleted
-                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                : "bg-slate-100 text-slate-500"
-            }`;
+                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                  : "bg-slate-100 text-slate-500"
+              }`;
 
             if (onSelectStep) {
               return (
@@ -125,13 +124,12 @@ export function StepperHeader({
             <>
               {/* Step Circle / Badge */}
               <div
-                className={`w-9 h-9 lg:w-10 lg:h-10 rounded-2xl flex items-center justify-center font-bold text-xs sm:text-sm transition-all shrink-0 ${
-                  isCurrent
+                className={`w-9 h-9 lg:w-10 lg:h-10 rounded-2xl flex items-center justify-center font-bold text-xs sm:text-sm transition-all shrink-0 ${isCurrent
                     ? "bg-indigo-600 text-white shadow-md shadow-indigo-500/25 ring-4 ring-indigo-50"
                     : isCompleted
-                    ? "bg-emerald-500 text-white shadow-xs"
-                    : "bg-slate-100 text-slate-400"
-                }`}
+                      ? "bg-emerald-500 text-white shadow-xs"
+                      : "bg-slate-100 text-slate-400"
+                  }`}
               >
                 {isCompleted ? (
                   <Check className="w-4 h-4 lg:w-5 lg:h-5 text-white stroke-[2.5]" />
@@ -143,24 +141,22 @@ export function StepperHeader({
               {/* Step Text */}
               <div className="min-w-0">
                 <span
-                  className={`text-[10px] font-bold uppercase tracking-wider block ${
-                    isCurrent
+                  className={`text-[10px] font-bold uppercase tracking-wider block ${isCurrent
                       ? "text-indigo-600"
                       : isCompleted
-                      ? "text-emerald-600"
-                      : "text-slate-400"
-                  }`}
+                        ? "text-emerald-600"
+                        : "text-slate-400"
+                    }`}
                 >
                   Step 0{step.id}
                 </span>
                 <p
-                  className={`text-xs lg:text-sm font-bold truncate ${
-                    isCurrent
+                  className={`text-xs lg:text-sm font-bold truncate ${isCurrent
                       ? "text-indigo-600"
                       : isCompleted
-                      ? "text-slate-900"
-                      : "text-slate-500"
-                  }`}
+                        ? "text-slate-900"
+                        : "text-slate-500"
+                    }`}
                 >
                   {step.name}
                 </p>
@@ -194,9 +190,8 @@ export function StepperHeader({
               {!isLast && (
                 <div className="flex-1 mx-2.5 lg:mx-4">
                   <div
-                    className={`h-[2px] w-full rounded-full transition-colors duration-300 ${
-                      currentStep > step.id ? "bg-emerald-500" : "bg-slate-200"
-                    }`}
+                    className={`h-[2px] w-full rounded-full transition-colors duration-300 ${currentStep > step.id ? "bg-emerald-500" : "bg-slate-200"
+                      }`}
                   />
                 </div>
               )}
