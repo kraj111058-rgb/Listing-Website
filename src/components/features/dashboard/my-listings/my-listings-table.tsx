@@ -26,6 +26,7 @@ import {
   MoreVertical,
   Crown,
   Briefcase,
+  HelpCircle,
 } from "lucide-react";
 import { type UserListingItem } from "@/data";
 
@@ -86,6 +87,21 @@ function ListingActionsCell({ listing, onDelete }: ListingActionsCellProps) {
             >
               <Edit className="size-4 text-indigo-600" />
               <span>Edit Listing</span>
+            </Button>
+          </Link>
+
+          {/* Manage FAQs */}
+          <Link
+            href={`/dashboard/faqs?listingId=${listing.id}`}
+            onClick={() => setMenuOpen(false)}
+          >
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start font-semibold gap-2 h-9 px-2 hover:bg-primary/10 hover:text-primary transition-all text-xs cursor-pointer"
+            >
+              <HelpCircle className="size-4 text-indigo-600" />
+              <span>Manage FAQs</span>
             </Button>
           </Link>
 

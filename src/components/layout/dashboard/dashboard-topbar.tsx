@@ -86,6 +86,10 @@ const pageTitles: Record<string, { title: string; subtitle: string }> = {
     title: "Add New Listing",
     subtitle: "Follow the 5 easy steps to add your business on India's top directory.",
   },
+  "/dashboard/faqs": {
+    title: "Custom FAQs",
+    subtitle: "Manage custom frequently asked questions across your business listings to resolve customer inquiries faster.",
+  },
   "/dashboard/inquiries": {
     title: "Customer Inquiries",
     subtitle: "Manage inquiries, quotes, and direct contact requests received for your listings.",

@@ -6,6 +6,7 @@ import {
   Building,
   Building2,
   Globe,
+  HelpCircle,
   Inbox,
   LayoutDashboard,
   MessageSquareText,
@@ -39,6 +40,11 @@ const navItems: NavItem[] = [
     title: "Add Listing",
     href: "/dashboard/create-listing",
     icon: PlusCircle,
+  },
+  {
+    title: "Custom FAQs",
+    href: "/dashboard/faqs",
+    icon: HelpCircle,
   },
   {
     title: "Customer Inquiries",

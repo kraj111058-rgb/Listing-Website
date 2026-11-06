@@ -7,3 +7,4 @@ export * from "./my-reviews";
 export * from "./listing-services-manager";
 export * from "./notifications";
 export * from "./profile";
+export * from "./faqs";
