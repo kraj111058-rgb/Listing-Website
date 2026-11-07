@@ -5,6 +5,7 @@ import {
   ArrowRight,
   Building,
   Building2,
+  Crown,
   Globe,
   HelpCircle,
   Inbox,
@@ -60,6 +61,11 @@ const navItems: NavItem[] = [
     title: "My Reviews",
     href: "/dashboard/my-reviews",
     icon: MessageSquareText,
+  },
+  {
+    title: "My Plans",
+    href: "/dashboard/my-plans",
+    icon: Crown,
   },
 ];
 

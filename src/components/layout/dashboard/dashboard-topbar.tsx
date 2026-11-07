@@ -90,6 +90,10 @@ const pageTitles: Record<string, { title: string; subtitle: string }> = {
     title: "Custom FAQs",
     subtitle: "Manage custom frequently asked questions across your business listings to resolve customer inquiries faster.",
   },
+  "/dashboard/my-plans": {
+    title: "My Plans",
+    subtitle: "View your active subscription, validity & limits, and explore available upgrade packages.",
+  },
   "/dashboard/inquiries": {
     title: "Customer Inquiries",
     subtitle: "Manage inquiries, quotes, and direct contact requests received for your listings.",

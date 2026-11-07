@@ -7,3 +7,4 @@ export * from "./profile.data";
 export * from "./location.data";
 export * from "./packages.data";
 export * from "./faqs.data";
+export * from "./my-plans.data";

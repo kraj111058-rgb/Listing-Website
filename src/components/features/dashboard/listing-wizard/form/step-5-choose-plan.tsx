@@ -4,6 +4,67 @@ import { Check, X } from "lucide-react";
 import { useFormContext, useWatch } from "react-hook-form";
 import { listingWizardPlans, type ListingPackageItem } from "@/data";
 import type { ListingWizardFormValues } from "@/schemas";
+import { cn } from "@/lib/utils";
+
+const getPackageIconStyle = (id: string) => {
+  switch (id) {
+    case "free":
+      return "bg-slate-100 border border-slate-200/80";
+    case "featured":
+      return "bg-amber-100 border border-amber-200/90";
+    case "featured-pro":
+      return "bg-purple-100 border border-purple-200/90";
+    case "banner-ads":
+      return "bg-indigo-50 border border-indigo-100";
+    default:
+      return "bg-slate-100 border border-slate-200";
+  }
+};
+
+const getPackageTagColor = (id: string) => {
+  switch (id) {
+    case "free":
+      return "text-slate-500";
+    case "featured":
+      return "text-amber-600";
+    case "featured-pro":
+      return "text-purple-600";
+    case "banner-ads":
+      return "text-indigo-600";
+    default:
+      return "text-slate-500";
+  }
+};
+
+const getPackageHeadline = (id: string) => {
+  switch (id) {
+    case "free":
+      return { text: "Get Started for Free", color: "text-slate-900" };
+    case "featured":
+      return { text: "Maximum Visibility for Your Business", color: "text-amber-600" };
+    case "featured-pro":
+      return { text: "Maximum Power for Growing Brands", color: "text-purple-600" };
+    case "banner-ads":
+      return { text: "Instant Brand Recognition", color: "text-indigo-600" };
+    default:
+      return { text: "", color: "text-slate-900" };
+  }
+};
+
+const getPackageCheckBg = (id: string) => {
+  switch (id) {
+    case "free":
+      return "bg-slate-100 text-slate-700";
+    case "featured":
+      return "bg-amber-100 text-amber-700";
+    case "featured-pro":
+      return "bg-purple-100 text-purple-700";
+    case "banner-ads":
+      return "bg-indigo-50 text-indigo-700";
+    default:
+      return "bg-slate-100 text-slate-700";
+  }
+};
 
 export function Step5ChoosePlan() {
   const { setValue, control } = useFormContext<ListingWizardFormValues>();
@@ -29,6 +90,8 @@ export function Step5ChoosePlan() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
           {listingWizardPlans.map((pkg: ListingPackageItem) => {
             const isSelected = selectedPlan === pkg.id;
+            const headline = getPackageHeadline(pkg.id);
+            const checkBg = getPackageCheckBg(pkg.id);
 
             return (
               <div
@@ -58,7 +121,10 @@ export function Step5ChoosePlan() {
                   {/* Icon & Selection Radio */}
                   <div className="flex items-center justify-between gap-2 mb-4 pt-1">
                     <div
-                      className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-xs ${pkg.iconBg}`}
+                      className={cn(
+                        "w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-xs",
+                        getPackageIconStyle(pkg.id)
+                      )}
                     >
                       <span>{pkg.icon}</span>
                     </div>
@@ -76,7 +142,10 @@ export function Step5ChoosePlan() {
                   {/* Tag & Plan Name */}
                   <div className="mb-1">
                     <span
-                      className={`text-[11px] font-bold tracking-wider uppercase ${pkg.tagColor}`}
+                      className={cn(
+                        "text-[11px] font-bold tracking-wider uppercase",
+                        getPackageTagColor(pkg.id)
+                      )}
                     >
                       {pkg.tag}
                     </span>
@@ -97,8 +166,8 @@ export function Step5ChoosePlan() {
 
                   {/* Headline & Description */}
                   <div className="space-y-1 pb-5 border-b border-slate-100">
-                    <h5 className={`font-bold text-xs ${pkg.headlineColor}`}>
-                      {pkg.headline}
+                    <h5 className={cn("font-bold text-xs", headline.color)}>
+                      {headline.text}
                     </h5>
                     <p className="text-xs text-slate-500 leading-relaxed">
                       {pkg.description}
@@ -117,7 +186,10 @@ export function Step5ChoosePlan() {
                           className="flex items-start gap-2.5 text-slate-700 font-medium"
                         >
                           <div
-                            className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${pkg.checkBg}`}
+                            className={cn(
+                              "w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5",
+                              checkBg
+                            )}
                           >
                             <Check size={11} strokeWidth={3} />
                           </div>
