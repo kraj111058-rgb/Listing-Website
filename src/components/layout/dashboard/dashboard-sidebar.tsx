@@ -97,14 +97,14 @@ export function DashboardSidebar({ onCloseMobile }: DashboardSidebarProps) {
           </div>
           <div className="flex flex-col">
             <div className="flex items-center gap-0.5 leading-none">
-              <span className="text-lg font-black tracking-tight text-slate-900">
-                IndianListing
+              <span className="text-xl font-black tracking-tight text-slate-900">
+                One
               </span>
-              <span className="text-lg font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-fuchsia-600">
-                Bucket
+              <span className="text-xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-fuchsia-600">
+                Listy
               </span>
             </div>
-            <span className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase mt-0.5">
+            <span className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase">
               Business Portal
             </span>
           </div>
