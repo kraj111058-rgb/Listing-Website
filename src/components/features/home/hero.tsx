@@ -6,18 +6,13 @@ import { useRouter } from "next/navigation";
 import { 
   Search, 
   MapPin, 
-  ArrowRight, 
-  Star, 
-  Building, 
-  Users, 
-  TrendingUp, 
-  CheckCircle2, 
-  ShieldCheck 
+  ArrowRight 
 } from "lucide-react";
 import { Container } from "@/components/common";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { popularSearches } from "@/data";
+import { HeroIndiaMap } from "./hero-india-map";
 
 export default function Hero() {
   const router = useRouter();
@@ -123,118 +118,9 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* Right Column: Interactive Animated Floating Visuals */}
-          <div className="hidden lg:block relative w-full h-[480px]">
-            {/* Center soft glow */}
-            <div className="absolute inset-0 bg-indigo-100/40 blur-[90px] rounded-full scale-90" />
-
-            <div className="relative w-full h-full flex items-center justify-center">
-              
-              {/* Center Floating Search & Category Preview Pill */}
-              <div className="absolute z-30 w-full max-w-[340px] bg-white/90 backdrop-blur-xl rounded-3xl p-5 border border-white shadow-[0_20px_40px_-15px_rgba(0,0,0,0.12)] animate-float">
-                <div className="flex items-center gap-3 bg-slate-50/90 rounded-2xl p-3.5 border border-slate-100">
-                  <Search className="text-indigo-600 shrink-0" size={20} />
-                  <div className="h-2.5 bg-slate-200 rounded-full w-28" />
-                  <div className="h-6 w-px bg-slate-200 mx-1" />
-                  <MapPin className="text-fuchsia-500 shrink-0" size={20} />
-                  <div className="h-2.5 bg-slate-200 rounded-full w-16" />
-                </div>
-
-                <div className="mt-4 grid grid-cols-3 gap-2.5">
-                  <div className="h-18 bg-white rounded-2xl border border-slate-100 shadow-xs flex flex-col items-center justify-center gap-1.5 hover:-translate-y-1 transition-transform cursor-pointer">
-                    <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
-                      <Star className="text-amber-500 fill-amber-500" size={15} />
-                    </div>
-                    <div className="h-1.5 bg-slate-200 rounded w-10" />
-                  </div>
-
-                  <div className="h-18 bg-white rounded-2xl border border-slate-100 shadow-xs flex flex-col items-center justify-center gap-1.5 hover:-translate-y-1 transition-transform cursor-pointer">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                      <Building className="text-blue-500" size={15} />
-                    </div>
-                    <div className="h-1.5 bg-slate-200 rounded w-12" />
-                  </div>
-
-                  <div className="h-18 bg-white rounded-2xl border border-slate-100 shadow-xs flex flex-col items-center justify-center gap-1.5 hover:-translate-y-1 transition-transform cursor-pointer">
-                    <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
-                      <Users className="text-emerald-500" size={15} />
-                    </div>
-                    <div className="h-1.5 bg-slate-200 rounded w-10" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Floating Map Pin Badge: Mumbai */}
-              <div className="absolute top-[4%] left-[6%] z-20 animate-float-delayed flex flex-col items-center gap-1.5">
-                <div className="w-12 h-12 bg-gradient-to-br from-fuchsia-500 to-purple-600 rounded-t-full rounded-bl-full rounded-br-sm rotate-45 flex items-center justify-center shadow-[0_10px_20px_rgba(217,70,239,0.35)] border-2 border-white">
-                  <div className="w-3.5 h-3.5 bg-white rounded-full -rotate-45" />
-                </div>
-                <div className="bg-white/95 backdrop-blur text-slate-800 font-bold text-xs px-3 py-1 rounded-lg border border-slate-100 shadow-lg">
-                  Mumbai
-                </div>
-              </div>
-
-              {/* Floating Map Pin Badge: Delhi */}
-              <div className="absolute bottom-[16%] right-[6%] z-20 animate-float-slow flex flex-col items-center gap-1.5">
-                <div className="w-11 h-11 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-t-full rounded-bl-full rounded-br-sm rotate-45 flex items-center justify-center shadow-[0_10px_20px_rgba(99,102,241,0.35)] border-2 border-white">
-                  <div className="w-3.5 h-3.5 bg-white rounded-full -rotate-45" />
-                </div>
-                <div className="bg-white/95 backdrop-blur text-slate-800 font-bold text-xs px-3 py-1 rounded-lg border border-slate-100 shadow-lg">
-                  Delhi
-                </div>
-              </div>
-
-              {/* Verified Business Review Card */}
-              <div className="absolute -bottom-[2%] left-[4%] z-40 bg-white rounded-2xl p-4 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.12)] w-56 animate-float-delayed border border-slate-100 transform -rotate-3">
-                <div className="flex gap-3 items-center mb-3">
-                  <div className="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0">
-                    <Building className="text-indigo-600" size={22} />
-                  </div>
-                  <div>
-                    <div className="h-3 bg-slate-800 rounded w-24 mb-1.5" />
-                    <div className="flex gap-1">
-                      {[1, 2, 3, 4, 5].map((s) => (
-                        <Star key={s} size={11} className="text-amber-400 fill-amber-400" />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs font-bold py-1.5 px-3 rounded-lg flex items-center justify-center gap-1.5 w-full">
-                  <CheckCircle2 size={13} />
-                  <span>Verified Business</span>
-                </div>
-              </div>
-
-              {/* 5,000+ Listings Badge */}
-              <div className="absolute top-[8%] right-[4%] z-40 bg-white rounded-2xl p-3.5 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.12)] w-48 animate-float border border-slate-100 transform rotate-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-full bg-emerald-50 flex items-center justify-center shrink-0 border border-emerald-100">
-                    <TrendingUp className="text-emerald-500" size={20} />
-                  </div>
-                  <div>
-                    <div className="text-slate-900 font-black text-xl leading-tight">5,000+</div>
-                    <div className="text-slate-500 text-xs font-bold uppercase tracking-wider">Listings</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Background Connecting Dashed Curves */}
-              <svg className="absolute inset-0 w-full h-full z-10 opacity-50 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M 100 150 Q 200 50 300 200 T 500 100" fill="none" stroke="url(#grad1)" strokeWidth="2" strokeDasharray="6 6" />
-                <path d="M 50 350 Q 250 250 350 400 T 550 300" fill="none" stroke="url(#grad2)" strokeWidth="2" strokeDasharray="6 6" />
-                <defs>
-                  <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#818cf8" />
-                    <stop offset="100%" stopColor="#f472b6" />
-                  </linearGradient>
-                  <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#fbbf24" />
-                    <stop offset="100%" stopColor="#818cf8" />
-                  </linearGradient>
-                </defs>
-              </svg>
-
-            </div>
+          {/* Right Column: Interactive Animated India Map & Cities */}
+          <div className="flex items-center justify-center relative w-full min-h-[380px] sm:min-h-[440px] lg:min-h-[480px] mt-6 lg:mt-0">
+            <HeroIndiaMap onSelectCity={(city) => setSelectedCity(city)} />
           </div>
 
         </div>

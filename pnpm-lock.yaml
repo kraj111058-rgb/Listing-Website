@@ -14,6 +14,9 @@ importers:
       '@hookform/resolvers':
         specifier: ^5.9.1
         version: 5.9.1(ajv@8.20.0)(react-hook-form@7.88.0(react@19.2.4))(zod@4.6.5)
+      '@svg-maps/india':
+        specifier: ^2.0.0
+        version: 2.0.0
       '@tanstack/react-table':
         specifier: ^8.21.3
         version: 8.21.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -687,6 +690,9 @@ packages:
 
   '@standard-schema/utils@0.3.0':
     resolution: {integrity: sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g==}
+
+  '@svg-maps/india@2.0.0':
+    resolution: {integrity: sha512-2v47x6L9bAzIJlcUtk4AxKyr94gjFiK/vcF4JMdO+1T8BHvt6pcJbr5sSzoEOzMRN7wxYxOZYNmw3rH5bwGd5w==}
 
   '@swc/helpers@0.5.15':
     resolution: {integrity: sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g==}
@@ -3505,6 +3511,8 @@ snapshots:
   '@sindresorhus/merge-streams@4.0.0': {}
 
   '@standard-schema/utils@0.3.0': {}
+
+  '@svg-maps/india@2.0.0': {}
 
   '@swc/helpers@0.5.15':
     dependencies:

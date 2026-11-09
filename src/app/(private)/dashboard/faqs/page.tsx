@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { FaqsManagerView } from "@/components/features/dashboard/faqs";
 import type { Metadata } from "next";
 
@@ -9,7 +10,9 @@ export const metadata: Metadata = {
 
 export default function CustomFaqsPage() {
   return (
-    <FaqsManagerView />
+    <Suspense fallback={null}>
+      <FaqsManagerView />
+    </Suspense>
   );
 }
 
