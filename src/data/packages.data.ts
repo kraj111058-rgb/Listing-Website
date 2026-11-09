@@ -18,7 +18,7 @@ export const packages: ListingPackageItem[] = [
     tag: "PACKAGE 1",
     name: "Free Listing",
     price: "₹0",
-    period: "/ forever",
+    period: "/ 5 months",
     highlight: false,
     description:
       "Add your business to our directory at absolutely no cost. Perfect for businesses just starting their online journey.",
