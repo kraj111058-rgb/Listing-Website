@@ -11,6 +11,11 @@ export const contactFormSchema = z.object({
     .min(1, "Email is required")
     .email("Please enter a valid email address"),
 
+  phone: z
+    .string()
+    .min(1, "Phone number is required")
+    .regex(/^[0-9]{10}$/, "Please enter a valid phone number (at least 10 digits)"),
+
   subject: z.string().min(1, "Please select a subject"),
 
   message: z

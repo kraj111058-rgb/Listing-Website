@@ -28,6 +28,7 @@ export function ContactForm() {
     defaultValues: {
       name: "",
       email: "",
+      phone: "",
       subject: "",
       message: "",
     },
@@ -57,6 +58,7 @@ export function ContactForm() {
                   label="Your Name"
                   placeholder="Rahul Sharma"
                   error={errors.name?.message}
+                  disabled={isSubmitting}
                   {...field}
                 />
               )}
@@ -72,13 +74,35 @@ export function ContactForm() {
                   type="email"
                   placeholder="rahul@email.com"
                   error={errors.email?.message}
+                  disabled={isSubmitting}
                   {...field}
                 />
               )}
             />
           </div>
 
-          {/* Row 2: Subject Dropdown */}
+          {/* Row 2: Mobile Phone Number */}
+          <Controller
+            name="phone"
+            control={control}
+            render={({ field }) => (
+              <InputWithLabel
+                id="contact-phone"
+                type="tel"
+                label="Mobile Number"
+                placeholder="98765 43210"
+                error={errors.phone?.message}
+                disabled={isSubmitting}
+                {...field}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^0-9]/g, "");
+                  field.onChange(value);
+                }}
+              />
+            )}
+          />
+
+          {/* Row 3: Subject Dropdown */}
           <Controller
             name="subject"
             control={control}
