@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import {
   InputWithLabel,
@@ -8,7 +9,39 @@ import {
 import type { ListingWizardFormValues } from "@/schemas";
 
 export function Step4SeoDetails() {
-  const { control } = useFormContext<ListingWizardFormValues>();
+  const { control, getValues, setValue } = useFormContext<ListingWizardFormValues>();
+
+  // Pure react-hook-form auto-fill: Defaults from Step 1 & 2 if fields are currently empty
+  useEffect(() => {
+    const currentMetaTitle = getValues("metaTitle");
+    const businessName = getValues("name");
+    const city = getValues("city");
+    if (!currentMetaTitle && businessName) {
+      const generatedTitle = city ? `${businessName} in ${city}` : businessName;
+      setValue("metaTitle", generatedTitle.slice(0, 100), {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    }
+
+    const currentMetaDesc = getValues("metaDescription");
+    const shortDesc = getValues("shortDescription");
+    if (!currentMetaDesc && shortDesc) {
+      setValue("metaDescription", shortDesc.slice(0, 200), {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    }
+
+    const currentKeywords = getValues("metaKeywords");
+    const tags = getValues("tags");
+    if (!currentKeywords && tags && tags.length > 0) {
+      setValue("metaKeywords", tags.slice(0, 5).join(", "), {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    }
+  }, [getValues, setValue]);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -19,7 +52,7 @@ export function Step4SeoDetails() {
       </div>
 
       {/* Pro Tip Banner */}
-      <div className="p-4 rounded-lg bg-indigo-50/90 text-foreground border border-primary flex items-start gap-2 text-xs">
+      <div className="p-4 rounded-lg bg-indigo-50/90 text-foreground border border-primary flex items-start gap-2 text-xs md:text-sm">
         <div className="text-base leading-none mt-0.5">💡</div>
         <p className="text-indigo-950 font-medium leading-relaxed">
           <span className="font-bold text-indigo-900">Pro Tip:</span> Good SEO details help your listing rank higher on Google and get more organic traffic.
@@ -35,15 +68,9 @@ export function Step4SeoDetails() {
             <InputWithLabel
               id="biz-meta-title"
               label="Meta Title"
-              maxLength={60}
-              placeholder="e.g. Best Pizza Restaurant in Delhi | MyBusiness"
+              placeholder="e.g. Royal Palace Heritage Hotel & Resort in Jaipur"
               {...field}
               error={error?.message}
-              description={
-                <span className="flex justify-end text-[11px] text-slate-400">
-                  {(field.value || "").length}/60 chars (ideal: 50-60)
-                </span>
-              }
             />
           )}
         />
@@ -56,16 +83,10 @@ export function Step4SeoDetails() {
             <TextareaWithLabel
               id="biz-meta-desc"
               label="Meta Description"
-              maxLength={160}
               rows={4}
-              placeholder="One-line summary for search results..."
+              placeholder="e.g. Luxury heritage hotel in Jaipur offering 5-star suites, royal dining, and event spaces."
               {...field}
               error={error?.message}
-              description={
-                <span className="flex justify-end text-[11px] text-slate-400">
-                  {(field.value || "").length}/160 chars (ideal: 140-160)
-                </span>
-              }
             />
           )}
         />
@@ -78,10 +99,10 @@ export function Step4SeoDetails() {
             <InputWithLabel
               id="biz-meta-keywords"
               label="Meta Keywords (Max 5)"
-              placeholder="e.g. hotel, luxury resort, jaipur stay"
+              placeholder="e.g. hotel in jaipur, luxury resort, heritage stay"
+              description="Separate keywords with commas (e.g. hotel in jaipur, luxury resort, heritage stay, ...)"
               {...field}
               error={error?.message}
-              description="Separate keywords with commas (e.g. hotel, luxury resort, jaipur stay)"
             />
           )}
         />

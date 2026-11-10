@@ -2,6 +2,7 @@ export interface BlogAuthor {
   name: string;
   role: string;
   avatar: string;
+  about?: string;
   socialLinks?: {
     instagram?: string;
     facebook?: string;
@@ -58,6 +59,7 @@ export const blogPosts: BlogPost[] = [
       name: "Rajesh Kumar",
       role: "Head of SEO & Growth",
       avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      about: "Digital marketing strategist with over 8 years of experience helping local businesses across India scale their organic visibility, Google rankings, and high-converting citation profiles.",
     },
     date: "Oct 05, 2026",
     image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&auto=format&fit=crop&q=80",
@@ -81,6 +83,7 @@ export const blogPosts: BlogPost[] = [
       name: "Pooja Sharma",
       role: "Content Marketing Lead",
       avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
+      about: "Content marketing lead specializing in organic growth, high-converting copy, and directory distribution strategies for Indian MSMEs.",
     },
     date: "Oct 03, 2026",
     image: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=800&auto=format&fit=crop&q=80",
@@ -104,6 +107,7 @@ export const blogPosts: BlogPost[] = [
       name: "Amit Verma",
       role: "Digital Strategist",
       avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+      about: "Digital strategist helping brands maximize their local presence and lead generation across search engines, business directories, and social platforms.",
     },
     date: "Sep 28, 2026",
     image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&auto=format&fit=crop&q=80",
@@ -127,6 +131,7 @@ export const blogPosts: BlogPost[] = [
       name: "Rajesh Kumar",
       role: "Head of SEO & Growth",
       avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      about: "Digital marketing strategist with over 8 years of experience helping local businesses across India scale their organic visibility, Google rankings, and high-converting citation profiles.",
     },
     date: "Sep 25, 2026",
     image: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&auto=format&fit=crop&q=80",
@@ -152,6 +157,7 @@ export const blogPosts: BlogPost[] = [
       name: "Neha Patel",
       role: "Community & Onboarding Specialist",
       avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80",
+      about: "Onboarding specialist focused on helping small business owners get verified quickly, audit local citations, and leverage directory listings.",
     },
     date: "Sep 20, 2026",
     image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&auto=format&fit=crop&q=80",
@@ -175,6 +181,7 @@ export const blogPosts: BlogPost[] = [
       name: "Vikram Singhania",
       role: "MSME Success Manager",
       avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+      about: "MSME growth advisor dedicated to helping retail brands and local service providers scale footfall and revenue with zero-cost marketing strategies.",
     },
     date: "Sep 15, 2026",
     image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&auto=format&fit=crop&q=80",
@@ -198,6 +205,7 @@ export const blogPosts: BlogPost[] = [
       name: "Pooja Sharma",
       role: "Content Marketing Lead",
       avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
+      about: "Content marketing lead specializing in organic growth, high-converting copy, and directory distribution strategies for Indian MSMEs.",
     },
     date: "Sep 10, 2026",
     image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&auto=format&fit=crop&q=80",
@@ -222,6 +230,7 @@ export const blogPosts: BlogPost[] = [
       name: "Amit Verma",
       role: "Digital Strategist",
       avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+      about: "Digital strategist helping brands maximize their local presence and lead generation across search engines, business directories, and social platforms.",
     },
     date: "Sep 05, 2026",
     image: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&auto=format&fit=crop&q=80",

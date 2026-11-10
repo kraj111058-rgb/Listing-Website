@@ -182,12 +182,12 @@ export const step4SeoDetailsSchema = z.object({
     .string()
     .trim()
     .min(1, "Meta title is required")
-    .max(60, "Meta title cannot exceed 60 characters"),
+    .max(100, "Meta title cannot exceed 100 characters"),
   metaDescription: z
     .string()
     .trim()
     .min(1, "Meta description is required")
-    .max(160, "Meta description cannot exceed 160 characters"),
+    .max(200, "Meta description cannot exceed 200 characters"),
   metaKeywords: z
     .string()
     .trim()

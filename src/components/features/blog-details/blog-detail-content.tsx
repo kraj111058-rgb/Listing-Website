@@ -26,7 +26,7 @@ export function BlogDetailContent({ post }: BlogDetailContentProps) {
       </div>
 
       {/* 2. Article Paragraphs */}
-      <div className="space-y-6 text-slate-700 text-base sm:text-lg leading-relaxed">
+      <div className="space-y-6 text-slate-700 text-sm sm:text-base leading-relaxed">
         {post.content.map((paragraph, idx) => (
           <p key={idx} className="leading-relaxed">
             {paragraph}
@@ -113,7 +113,8 @@ export function BlogDetailContent({ post }: BlogDetailContentProps) {
       </div>
 
       {/* 6. Author Bio Box */}
-      <div className="p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-slate-50 border border-slate-200/80 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
           <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden bg-slate-200 ring-2 ring-indigo-100 shrink-0 shadow-xs">
             <Image
@@ -191,6 +192,19 @@ export function BlogDetailContent({ post }: BlogDetailContentProps) {
           </Link>
         </div>
       </div>
+
+      {/* Optional Author About / Bio */}
+      {(post.author.about) && (
+        <div className="pt-3.5 border-t border-slate-200/80 space-y-1.5">
+          <h5 className="text-sm md:text-base font-semibold text-slate-900 tracking-tight">
+            About
+          </h5>
+          <p className="text-sm leading-relaxed text-slate-600 font-normal">
+            {post.author.about}
+          </p>
+        </div>
+      )}
+    </div>
     </article>
   );
 }
