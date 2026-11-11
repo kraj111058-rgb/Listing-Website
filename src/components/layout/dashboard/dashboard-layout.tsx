@@ -1,11 +1,26 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { DashboardSidebar } from "./dashboard-sidebar";
 import { DashboardTopbar } from "./dashboard-topbar";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
+
+  // Hide sidebar and topbar completely for distraction-free listing creation & editing
+  const isWizardRoute =
+    pathname.startsWith("/dashboard/create-listing") ||
+    pathname.startsWith("/dashboard/edit-listing");
+
+  if (isWizardRoute) {
+    return (
+      <div className="min-h-screen bg-[#f8f9fc] flex flex-col antialiased">
+        {children}
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f8f9fc] flex flex-col antialiased">
@@ -41,3 +56,4 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+

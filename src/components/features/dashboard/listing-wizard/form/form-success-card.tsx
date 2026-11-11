@@ -15,19 +15,17 @@ export function FormSuccessCard({ mode = "create" }: FormSuccessCardProps) {
   const [countdown, setCountdown] = useState(20);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          router.push("/dashboard/my-listings");
-          return 0;
-        }
-        return prev - 1;
-      });
+    if (countdown <= 0) {
+      router.push("/dashboard/my-listings");
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
 
-    return () => clearInterval(interval);
-  }, [router]);
+    return () => clearInterval(timer);
+  }, [countdown, router]);
 
   const handleGoToListings = () => {
     router.push("/dashboard/my-listings");
@@ -37,7 +35,7 @@ export function FormSuccessCard({ mode = "create" }: FormSuccessCardProps) {
 
   return (
     <div className="w-full py-6 flex items-center justify-center animate-in fade-in-50 zoom-in-95 duration-300">
-      <div className="w-full max-w-xl bg-white rounded-2xl border border-border/90 shadow-xl shadow-slate-900/5 overflow-hidden">
+      <div className="w-full max-w-2xl bg-white rounded-2xl border border-border/90 shadow-xl shadow-slate-900/5 overflow-hidden">
         <div className="p-6 sm:p-8 space-y-5 text-center">
           {/* Glowing Success Icon */}
           <div className="relative mx-auto w-16 h-16 flex items-center justify-center">
@@ -129,7 +127,7 @@ export function FormSuccessCard({ mode = "create" }: FormSuccessCardProps) {
             </div>
           </div>
 
-          {/* Action Button & 500s Countdown */}
+          {/* Action Button & Countdown */}
           <div className="pt-1 space-y-3">
             <Button
               type="button"

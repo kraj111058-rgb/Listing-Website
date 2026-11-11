@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, ArrowLeft, Loader2, Check } from "lucide-react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
+import { AlertModal } from "@/components/common";
 import {
   listingWizardSchema,
   stepFieldsMap,
@@ -27,7 +27,9 @@ interface ListingFormWizardProps {
   listingId?: string;
 }
 
-function getDefaultListingValues(mode: "create" | "edit"): ListingWizardFormValues {
+function getDefaultListingValues(
+  mode: "create" | "edit"
+): ListingWizardFormValues {
   return {
     // Step 1: Basic Information
     name: mode === "edit" ? "Royal Palace Heritage Hotel & Resort" : "",
@@ -83,9 +85,7 @@ function getDefaultListingValues(mode: "create" | "edit"): ListingWizardFormValu
 
     // Step 4: SEO Details
     metaTitle:
-      mode === "edit"
-        ? "Best Heritage Hotel in Jaipur | Royal Palace"
-        : "",
+      mode === "edit" ? "Best Heritage Hotel in Jaipur | Royal Palace" : "",
     metaDescription:
       mode === "edit"
         ? "Book luxury heritage suites at Royal Palace Hotel Jaipur. 5-star experience."
@@ -106,6 +106,11 @@ export function ListingFormWizard({
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  // Unsaved changes alert modal state
+  const [showUnsavedModal, setShowUnsavedModal] = useState(false);
+  const [pendingNavUrl, setPendingNavUrl] = useState<string | null>(null);
+  const allowNavigationRef = useRef(false);
+
   const methods = useForm<ListingWizardFormValues>({
     resolver: zodResolver(listingWizardSchema),
     mode: "onChange",
@@ -115,8 +120,123 @@ export function ListingFormWizard({
   const {
     handleSubmit,
     trigger,
-    formState: { isSubmitting },
+    formState: { isSubmitting, isDirty },
   } = methods;
+
+  // Check if user has unsaved progress (dirty form or progressed past step 1)
+  const hasUnsavedChanges =
+    (isDirty || currentStep > 1) && !isSubmitted;
+
+  // 1. Browser Tab Close / Refresh Protection
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges && !isSubmitted) {
+        e.preventDefault();
+        e.returnValue = "";
+        return "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [hasUnsavedChanges, isSubmitted]);
+
+  // 2. Browser Back / Popstate Button Protection
+  useEffect(() => {
+    if (!hasUnsavedChanges || isSubmitted) return;
+
+    window.history.pushState({ formGuard: true }, "", window.location.href);
+
+    const handlePopState = () => {
+      if (allowNavigationRef.current) return;
+      window.history.pushState({ formGuard: true }, "", window.location.href);
+      setPendingNavUrl("BACK");
+      setShowUnsavedModal(true);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [hasUnsavedChanges, isSubmitted]);
+
+  // 3. Document-Level Link Click Interceptor
+  useEffect(() => {
+    const handleClickCapture = (e: MouseEvent) => {
+      if (isSubmitted || allowNavigationRef.current) return;
+      if (!hasUnsavedChanges) return;
+
+      const target = e.target as HTMLElement | null;
+      const anchor = target?.closest("a");
+      if (!anchor) return;
+
+      const href = anchor.getAttribute("href");
+      if (
+        !href ||
+        href.startsWith("#") ||
+        href.startsWith("mailto:") ||
+        href.startsWith("tel:") ||
+        href.startsWith("javascript:") ||
+        anchor.target === "_blank"
+      ) {
+        return;
+      }
+
+      const targetUrl = new URL(anchor.href, window.location.href);
+      const currentUrl = new URL(window.location.href);
+      if (
+        targetUrl.pathname === currentUrl.pathname &&
+        targetUrl.search === currentUrl.search
+      ) {
+        return;
+      }
+
+      // Stop navigation
+      e.preventDefault();
+      e.stopPropagation();
+
+      setPendingNavUrl(targetUrl.pathname + targetUrl.search);
+      setShowUnsavedModal(true);
+    };
+
+    document.addEventListener("click", handleClickCapture, { capture: true });
+    return () => {
+      document.removeEventListener("click", handleClickCapture, {
+        capture: true,
+      });
+    };
+  }, [hasUnsavedChanges, isSubmitted]);
+
+  // Cancel button click handler
+  const handleCancelClick = (targetUrl: string = "/dashboard/my-listings") => {
+    if (hasUnsavedChanges) {
+      setPendingNavUrl(targetUrl);
+      setShowUnsavedModal(true);
+    } else {
+      router.push(targetUrl);
+    }
+  };
+
+  // User confirmed "Discard & Leave"
+  const handleConfirmDiscard = () => {
+    allowNavigationRef.current = true;
+    setShowUnsavedModal(false);
+    if (pendingNavUrl === "BACK") {
+      window.history.go(-2);
+    } else if (pendingNavUrl) {
+      router.push(pendingNavUrl);
+    } else {
+      router.push("/dashboard/my-listings");
+    }
+  };
+
+  // User chose to "Keep Editing"
+  const handleStay = () => {
+    setShowUnsavedModal(false);
+    setPendingNavUrl(null);
+  };
 
   const handleNext = async (e?: React.MouseEvent) => {
     if (e) {
@@ -157,12 +277,16 @@ export function ListingFormWizard({
   };
 
   if (isSubmitted) {
-    return <FormSuccessCard mode={mode} />;
+    return (
+      <div className="w-full min-h-screen bg-[#f8f9fc] py-10 px-4 flex items-center justify-center">
+        <FormSuccessCard mode={mode} />
+      </div>
+    );
   }
 
   return (
-    <div className="w-full space-y-6">
-      {/* Title & Navigation Header */}
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+      {/* Title & Navigation Header (Original Clean Style) */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
@@ -173,15 +297,14 @@ export function ListingFormWizard({
             daily visitors.
           </p>
         </div>
-        <Link href="/dashboard/my-listings">
-          <Button
-            type="button"
-            variant="outline"
-            className="h-9 px-3.5 rounded-[9px] border-slate-200 text-xs font-semibold text-slate-700 hover:text-slate-900 cursor-pointer"
-          >
-            Cancel
-          </Button>
-        </Link>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => handleCancelClick("/dashboard/my-listings")}
+          className="h-9 px-3.5 rounded-[9px] border-slate-200 text-xs font-semibold text-slate-700 hover:text-slate-900 cursor-pointer"
+        >
+          Cancel
+        </Button>
       </div>
 
       {/* Stepper Header (1 to 5) - Visual progress tracker */}
@@ -261,6 +384,20 @@ export function ListingFormWizard({
           </form>
         </FormProvider>
       </div>
+
+      {/* Unsaved Changes Confirmation Dialog using common AlertModal */}
+      <AlertModal
+        open={showUnsavedModal}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) handleStay();
+        }}
+        title="Unsaved Listing Changes"
+        description="You have unsaved changes in your listing form. If you leave now, all your entered business details will be lost."
+        confirmLabel="Discard & Leave"
+        cancelLabel="Keep Editing"
+        confirmVariant="destructive"
+        onConfirm={handleConfirmDiscard}
+      />
     </div>
   );
 }

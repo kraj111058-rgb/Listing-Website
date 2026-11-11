@@ -100,7 +100,7 @@ export function Step4SeoDetails() {
               id="biz-meta-keywords"
               label="Meta Keywords (Max 5)"
               placeholder="e.g. hotel in jaipur, luxury resort, heritage stay"
-              description="Separate keywords with commas (e.g. hotel in jaipur, luxury resort, heritage stay, ...)"
+              description="Separate keywords with commas (e.g. hotel in jaipur, luxury resort, heritage stay, etc.)"
               {...field}
               error={error?.message}
             />
