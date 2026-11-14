@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Check, CheckCircle2, Clock, ArrowRight, ShieldCheck, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,10 +13,14 @@ export function FormSuccessCard({ mode = "create" }: FormSuccessCardProps) {
   const router = useRouter();
   const isCreate = mode === "create";
   const [countdown, setCountdown] = useState(20);
+  const hasRedirected = useRef(false);
 
   useEffect(() => {
     if (countdown <= 0) {
-      router.push("/dashboard/my-listings");
+      if (!hasRedirected.current) {
+        hasRedirected.current = true;
+        router.push("/dashboard/my-listings");
+      }
       return;
     }
 
@@ -28,7 +32,10 @@ export function FormSuccessCard({ mode = "create" }: FormSuccessCardProps) {
   }, [countdown, router]);
 
   const handleGoToListings = () => {
-    router.push("/dashboard/my-listings");
+    if (!hasRedirected.current) {
+      hasRedirected.current = true;
+      router.push("/dashboard/my-listings");
+    }
   };
 
   const progressPercentage = (countdown / 20) * 100;

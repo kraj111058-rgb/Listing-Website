@@ -1,8 +1,8 @@
+import { ScrollToTop } from "@/components/common";
+import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Sora } from "next/font/google";
 import "./globals.css";
-import { cn } from "@/lib/utils";
-import { ScrollToTop } from "@/components/common";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -18,7 +18,9 @@ export const metadata: Metadata = {
   title: "Business Listing Sites in India — Free Business Directory | IndianListingBucket",
   description: "Find & list local businesses across India. Browse verified business listings, reviews & ratings. India's most trusted free business listing website covering 500+ cities.",
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/images/brand-logo-main.svg", type: "image/svg+xml" },
+    ],
   },
 };
 

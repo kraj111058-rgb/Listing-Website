@@ -1,22 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  ArrowRight,
+  ChevronDown,
+  Layers,
+  Menu,
+  Plus,
+  ShieldCheck,
+  Sparkles,
+  X
+} from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { 
-  Plus, 
-  ChevronDown, 
-  Menu, 
-  X, 
-  Sparkles, 
-  Layers, 
-  ArrowRight, 
-  ShieldCheck, 
-  Building, 
-  User 
-} from "lucide-react";
+import { useState } from "react";
 import { Container } from "../common";
-import { Button } from "@/components/ui/button";
 
 export default function Header() {
   const router = useRouter();
@@ -55,10 +54,15 @@ export default function Header() {
         <Container>
           <div className="flex items-center justify-between h-20 gap-4">
             {/* Brand Logo: IndianListingBucket */}
-            <Link href="/" className="flex items-center gap-3 shrink-0 group">
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-fuchsia-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25 group-hover:scale-105 transition-transform">
-                <Building className="w-6 h-6" />
-              </div>
+            <Link href="/" className="flex items-center gap-1.75 shrink-0 group">
+              <Image
+                src="/images/brand-logo-header.svg"
+                alt="OneListy"
+                width={54}
+                height={54}
+                className="w-13.5 h-13.5 object-contain mix-blend-multiply"
+                priority
+              />
               <div className="hidden sm:flex flex-col">
                 <div className="flex items-center gap-0.5">
                   <span className="text-2xl font-black tracking-tight text-slate-900">
@@ -69,7 +73,7 @@ export default function Header() {
                   </span>
                 </div>
                 <span className="text-xs font-semibold text-slate-400 tracking-wide">
-                  India's Premier Directory
+                  India&apos;s Premier Directory
                 </span>
               </div>
             </Link>
@@ -84,12 +88,12 @@ export default function Header() {
               </Link>
 
               {/* Categories Dropdown */}
-              <div 
+              <div
                 className="relative py-2"
                 onMouseEnter={() => setCategoriesOpen(true)}
                 onMouseLeave={() => setCategoriesOpen(false)}
               >
-                <button 
+                <button
                   className="flex items-center gap-1.5 hover:text-indigo-600 transition-colors focus:outline-none cursor-pointer"
                   aria-expanded={categoriesOpen}
                 >
@@ -100,8 +104,8 @@ export default function Header() {
                 {categoriesOpen && (
                   <div className="absolute left-0 top-full pt-2 w-80 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
                     <div className="bg-white rounded-2xl shadow-2xl border border-slate-100 p-3 space-y-1.5">
-                      <Link 
-                        href="/categories" 
+                      <Link
+                        href="/categories"
                         className="flex items-center gap-3.5 px-4 py-3 rounded-xl hover:bg-indigo-50/80 text-slate-800 hover:text-indigo-600 transition-all font-bold text-sm group"
                       >
                         <div className="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors">
@@ -112,29 +116,29 @@ export default function Header() {
                           <div className="text-xs text-slate-500 font-normal">Explore 32+ business categories</div>
                         </div>
                       </Link>
-                      <Link 
-                        href="/listings?category=hotels-restaurants" 
+                      <Link
+                        href="/listings?category=hotels-restaurants"
                         className="flex items-center gap-3 px-4 py-2 rounded-xl hover:bg-slate-50 text-slate-700 hover:text-indigo-600 transition-all text-sm font-semibold"
                       >
                         <span className="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
                         <span>Hotels &amp; Restaurants</span>
                       </Link>
-                      <Link 
-                        href="/listings?category=health-beauty" 
+                      <Link
+                        href="/listings?category=health-beauty"
                         className="flex items-center gap-3 px-4 py-2 rounded-xl hover:bg-slate-50 text-slate-700 hover:text-indigo-600 transition-all text-sm font-semibold"
                       >
                         <span className="w-2.5 h-2.5 rounded-full bg-pink-400"></span>
                         <span>Health &amp; Beauty</span>
                       </Link>
-                      <Link 
-                        href="/listings?category=technology-it" 
+                      <Link
+                        href="/listings?category=technology-it"
                         className="flex items-center gap-3 px-4 py-2 rounded-xl hover:bg-slate-50 text-slate-700 hover:text-indigo-600 transition-all text-sm font-semibold"
                       >
                         <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
                         <span>Technology &amp; IT</span>
                       </Link>
-                      <Link 
-                        href="/listings?category=real-estate" 
+                      <Link
+                        href="/listings?category=real-estate"
                         className="flex items-center gap-3 px-4 py-2 rounded-xl hover:bg-slate-50 text-slate-700 hover:text-indigo-600 transition-all text-sm font-semibold"
                       >
                         <span className="w-2.5 h-2.5 rounded-full bg-purple-500"></span>

@@ -1,8 +1,7 @@
 "use client";
 
+import Image from "next/image";
 import { ReactNode } from "react";
-import Link from "next/link";
-import { Building } from "lucide-react";
 
 interface AuthCardContainerProps {
   children: ReactNode;
@@ -16,13 +15,17 @@ export function AuthCardContainer({
   return (
     <div className={`w-full ${maxWidth} mx-auto flex flex-col items-center`}>
       {/* Centered Brand Logo above Card */}
-      <Link
-        href="/"
-        className="inline-flex items-center gap-3 group mb-6 text-left select-none"
+      <div
+        className="inline-flex items-center gap-1.75 group mb-6 text-left select-none"
       >
-        <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-fuchsia-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/25 group-hover:scale-105 transition-transform shrink-0">
-          <Building className="w-6 h-6" />
-        </div>
+        <Image
+          src="/images/brand-logo-main.svg"
+          alt="OneListy"
+          width={54}
+          height={54}
+          className="w-13.5 h-13.5 object-contain mix-blend-multiply"
+          priority
+        />
         <div className="flex flex-col">
           <div className="flex items-center gap-0.5 leading-none">
             <span className="text-2xl font-black tracking-tight text-slate-900">
@@ -36,7 +39,7 @@ export function AuthCardContainer({
             India&apos;s Premier Directory
           </span>
         </div>
-      </Link>
+      </div>
 
       {/* Main Centered White Floating Card */}
       <div className="w-full bg-white rounded-3xl p-6 sm:p-9 shadow-[0_10px_40px_rgba(0,0,0,0.06)] border border-slate-100/90">

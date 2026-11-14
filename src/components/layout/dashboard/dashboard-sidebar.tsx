@@ -3,7 +3,6 @@
 import { cn } from "@/lib/utils";
 import {
   ArrowRight,
-  Building,
   Building2,
   Crown,
   Globe,
@@ -15,6 +14,7 @@ import {
   Sparkles,
   Star,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -89,12 +89,18 @@ export function DashboardSidebar({ onCloseMobile }: DashboardSidebarProps) {
       <div className="h-20 px-5 border-b border-slate-200/80 flex items-center justify-between shrink-0">
         <Link
           href="/"
-          className="inline-flex items-center gap-2.5 group"
+          className="inline-flex items-center gap-1.75 group"
           onClick={onCloseMobile}
         >
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-fuchsia-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform shrink-0">
-            <Building className="w-5 h-5" />
-          </div>
+
+          <Image
+            src="/images/brand-logo-main.svg"
+            alt="OneListy"
+            width={47}
+            height={47}
+            className="w-11.75 h-11.75 object-contain mix-blend-multiply"
+            priority
+          />
           <div className="flex flex-col">
             <div className="flex items-center gap-0.5 leading-none">
               <span className="text-xl font-black tracking-tight text-slate-900">
