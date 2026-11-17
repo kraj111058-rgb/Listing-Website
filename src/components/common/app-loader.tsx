@@ -3,25 +3,39 @@ import { cn } from "@/lib/utils";
 
 interface AppLoaderProps {
   className?: string;
-  size?: "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg";
   text?: string;
+  fullScreen?: boolean;
+  inline?: boolean;
 }
 
-export function AppLoader({
+const sizeClasses = {
+  xs: "size-3.5",
+  sm: "size-4",
+  md: "size-8",
+  lg: "size-12",
+};
+
+function AppLoader({
   className,
   size = "md",
   text,
+  fullScreen = false,
+  inline = false,
 }: AppLoaderProps) {
-  const sizeClasses = {
-    sm: "w-4 h-4",
-    md: "w-8 h-8",
-    lg: "w-12 h-12",
-  };
+  if (inline) {
+    return (
+      <Loader2
+        className={cn("animate-spin shrink-0", sizeClasses[size], className)}
+      />
+    );
+  }
 
   return (
     <div
       className={cn(
         "flex flex-col items-center justify-center gap-3 py-12 text-slate-500",
+        fullScreen && "min-h-screen w-full",
         className
       )}
     >
@@ -32,3 +46,5 @@ export function AppLoader({
     </div>
   );
 }
+
+export const Loader = AppLoader;

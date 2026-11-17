@@ -2,6 +2,7 @@ const DATABASE = {
   USERS: "users",
   BLOGS_CATEGORY: "blog-category",
   BLOGS: "blogs",
+  CONTACT_INQUIRIES: "contact_inquiries",
 }
 
 const STORAGE = {
