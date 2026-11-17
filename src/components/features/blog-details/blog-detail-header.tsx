@@ -74,7 +74,7 @@ export function BlogDetailHeader({ post }: BlogDetailHeaderProps) {
       </div>
 
       {/* Article Title */}
-      <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-tight">
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 tracking-tight leading-tight">
         {post.title}
       </h1>
     </div>
