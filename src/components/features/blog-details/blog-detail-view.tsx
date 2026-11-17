@@ -2,9 +2,10 @@
 
 import { Container } from "@/components/common";
 import { Button } from "@/components/ui/button";
-import type { BlogPostDataWithCategory } from "@/services/blog";
+import { useIncrementBlogViews, type BlogPostDataWithCategory } from "@/services/blog";
 import { ArrowLeft, BookOpen } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { BlogDetailContent } from "./blog-detail-content";
 import { BlogDetailHeader } from "./blog-detail-header";
 import { BlogDetailHeroImage } from "./blog-detail-hero-image";
@@ -17,6 +18,35 @@ interface BlogDetailViewProps {
 }
 
 export function BlogDetailView({ post, relatedPosts }: BlogDetailViewProps) {
+  const [currentViews, setCurrentViews] = useState(post?.views ?? 0);
+  const { mutate: incrementViews } = useIncrementBlogViews();
+
+  useEffect(() => {
+    if (post?.views !== undefined) {
+      setCurrentViews(post.views);
+    }
+  }, [post?.views]);
+
+  // Track Unique Blog View (24-Hour Cooldown)
+  useEffect(() => {
+    if (!post?.id || typeof window === "undefined") return;
+
+    const storageKey = `viewed_blog_${post.id}`;
+    const lastViewed = localStorage.getItem(storageKey);
+    const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+    if (!lastViewed || Date.now() - Number(lastViewed) > ONE_DAY_MS) {
+      localStorage.setItem(storageKey, Date.now().toString());
+      incrementViews(post.id, {
+        onSuccess: (newDbCount) => {
+          if (typeof newDbCount === "number") {
+            setCurrentViews(newDbCount);
+          }
+        },
+      });
+    }
+  }, [post?.id, incrementViews]);
+
   if (!post) {
     return (
       <div className="py-24 bg-white text-center">
@@ -50,7 +80,7 @@ export function BlogDetailView({ post, relatedPosts }: BlogDetailViewProps) {
       {/* 1. Header Section */}
       <section className="py-10 sm:py-14 bg-slate-50 border-b border-slate-200/70">
         <Container>
-          <BlogDetailHeader post={post} />
+          <BlogDetailHeader post={post} views={currentViews} />
         </Container>
       </section>
 

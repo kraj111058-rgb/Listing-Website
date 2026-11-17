@@ -8,9 +8,11 @@ import { Button } from "@/components/ui/button";
 
 interface BlogDetailHeaderProps {
   post: BlogPostDataWithCategory;
+  views?: number;
 }
 
-export function BlogDetailHeader({ post }: BlogDetailHeaderProps) {
+export function BlogDetailHeader({ post, views }: BlogDetailHeaderProps) {
+  const displayViews = views !== undefined ? views : post.views;
   const formattedDate = post.published_at
     ? new Date(post.published_at).toLocaleDateString("en-US", {
         month: "short",
@@ -64,7 +66,7 @@ export function BlogDetailHeader({ post }: BlogDetailHeaderProps) {
         </Badge>
         <span className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
           <Eye className="w-3.5 h-3.5 text-slate-400" />
-          <span>{post.views.toLocaleString()} views</span>
+          <span>{displayViews.toLocaleString()} views</span>
         </span>
         <span className="text-slate-300">•</span>
         <span className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">

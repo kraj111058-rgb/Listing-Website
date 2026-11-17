@@ -82,4 +82,15 @@ export const blogService = {
 
     return data;
   },
+
+  // 4. INCREMENT VIEWS (Atomic RPC)
+  incrementViews: async (blogId: string): Promise<number | null> => {
+    const { data, error } = await supabase.rpc("increment_blog_views", {
+      blog_id: blogId,
+    });
+
+    if (error) throw new Error(error.message);
+
+    return (data as number) ?? null;
+  },
 };
