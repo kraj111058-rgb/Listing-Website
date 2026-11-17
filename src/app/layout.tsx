@@ -16,7 +16,8 @@ const sora = Sora({
 });
 
 export const metadata: Metadata = {
-  title: "Business Listing Sites in India — Free Business Directory | IndianListingBucket",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL!),
+  title: "Business Listing Sites in India — Free Business Directory | OneListy",
   description: "Find & list local businesses across India. Browse verified business listings, reviews & ratings. India's most trusted free business listing website covering 500+ cities.",
   icons: {
     icon: [

@@ -28,25 +28,38 @@ export async function generateMetadata({
     };
   }
 
+  const title = post.meta_title;
+  const description = post.meta_description;
+  const url = `/blog/${post.slug}`;
+
   return {
-    title: post.meta_title,
-    description: post.meta_description,
+    title,
+    description,
     keywords: post.meta_keywords ?? undefined,
     alternates: {
-      canonical: `/blog/${post.slug}`,
+      canonical: url,
     },
     openGraph: {
-      title: post.meta_title,
-      description: post.meta_description,
-      images: [{ url: post.image }],
+      title,
+      description,
+      url,
+      siteName: "OneListy",
       type: "article",
-      publishedTime: post.published_at ?? undefined,
+      publishedTime: post.published_at ?? post.created_at,
       authors: [post.author],
+      images: [
+        {
+          url: post.image,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
-      title: post.meta_title,
-      description: post.meta_description,
+      title,
+      description,
       images: [post.image],
     },
   };
