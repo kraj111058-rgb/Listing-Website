@@ -1,19 +1,19 @@
 "use client";
 
-import Link from "next/link";
-import { BookOpen, ArrowLeft } from "lucide-react";
 import { Container } from "@/components/common";
 import { Button } from "@/components/ui/button";
-import { BlogPost } from "@/data";
+import type { BlogPostDataWithCategory } from "@/services/blog";
+import { ArrowLeft, BookOpen } from "lucide-react";
+import Link from "next/link";
+import { BlogDetailContent } from "./blog-detail-content";
 import { BlogDetailHeader } from "./blog-detail-header";
 import { BlogDetailHeroImage } from "./blog-detail-hero-image";
-import { BlogDetailContent } from "./blog-detail-content";
-import { BlogDetailSidebar } from "./blog-detail-sidebar";
 import { BlogDetailRelated } from "./blog-detail-related";
+import { BlogDetailSidebar } from "./blog-detail-sidebar";
 
 interface BlogDetailViewProps {
-  post: BlogPost | null;
-  relatedPosts: BlogPost[];
+  post: BlogPostDataWithCategory | null;
+  relatedPosts: BlogPostDataWithCategory[];
 }
 
 export function BlogDetailView({ post, relatedPosts }: BlogDetailViewProps) {
@@ -43,43 +43,43 @@ export function BlogDetailView({ post, relatedPosts }: BlogDetailViewProps) {
     );
   }
 
+  const categoryName = post.category?.name ?? "General";
+
   return (
     <div className="w-full flex flex-col bg-white">
-      {/* 1. Header Section - Full Container Width */}
+      {/* 1. Header Section */}
       <section className="py-10 sm:py-14 bg-slate-50 border-b border-slate-200/70">
         <Container>
           <BlogDetailHeader post={post} />
         </Container>
       </section>
 
-      {/* 2. Hero Image Section - Full Container Width */}
+      {/* 2. Hero Image Section */}
       <section className="py-8 sm:py-10 bg-white">
         <Container>
           <BlogDetailHeroImage post={post} />
         </Container>
       </section>
 
-      {/* 3. Main Content & Right Sidebar Grid - Full Container Width */}
+      {/* 3. Main Content & Right Sidebar Grid */}
       <section className="pb-16 sm:pb-20 bg-white">
         <Container>
           <div className="flex flex-col lg:flex-row items-start gap-8 lg:gap-12">
-            
-            {/* Left Content Column (68% width on desktop) */}
+            {/* Left Content Column */}
             <main className="w-full lg:w-[68%] min-w-0">
               <BlogDetailContent post={post} />
             </main>
 
-            {/* Right Sidebar Column (32% width on desktop) */}
+            {/* Right Sidebar Column */}
             <aside className="w-full lg:w-[32%] lg:sticky lg:top-24">
               <BlogDetailSidebar currentSlug={post.slug} />
             </aside>
-
           </div>
         </Container>
       </section>
 
-      {/* 4. Related Articles Section - Full Container Width */}
-      <BlogDetailRelated posts={relatedPosts} category={post.category} />
+      {/* 4. Related Articles Section */}
+      <BlogDetailRelated posts={relatedPosts} category={categoryName} />
     </div>
   );
 }

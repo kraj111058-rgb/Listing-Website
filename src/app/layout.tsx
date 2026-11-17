@@ -1,4 +1,5 @@
 import { ScrollToTop } from "@/components/common";
+import Providers from "@/app/providers";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Sora } from "next/font/google";
@@ -35,8 +36,10 @@ export default function RootLayout({
       className={cn("antialiased", plusJakartaSans.variable, sora.variable, "font-sans")}
     >
       <body className="min-h-screen bg-white text-slate-900">
-        <ScrollToTop />
-        {children}
+        <Providers>
+          <ScrollToTop />
+          {children}
+        </Providers>
       </body>
     </html>
   );

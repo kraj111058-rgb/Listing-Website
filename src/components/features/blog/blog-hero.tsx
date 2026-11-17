@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Search, Sparkles, BookOpen, X } from "lucide-react";
+import { Search, Sparkles, X } from "lucide-react";
 import { Container } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -75,7 +75,7 @@ export function BlogHero({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
-                placeholder="Search guides, SEO tips, citations..."
+                placeholder="Search by title, description, or author..."
                 className="w-full bg-transparent text-white placeholder-slate-400 text-sm sm:text-base px-3 py-2 outline-none"
               />
               {searchQuery && (

@@ -3,15 +3,23 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Eye, ArrowRight } from "lucide-react";
-import { BlogPost } from "@/data";
+import type { BlogPostDataWithCategory } from "@/services/blog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 interface BlogCardProps {
-  post: BlogPost;
+  post: BlogPostDataWithCategory;
 }
 
 export function BlogCard({ post }: BlogCardProps) {
+  const formattedDate = post.published_at
+    ? new Date(post.published_at).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "Recently";
+
   return (
     <article className="bg-white rounded-2xl border border-slate-200/80 shadow-[0_4px_24px_rgba(0,0,0,0.05)] hover:shadow-xl hover:border-indigo-200 transition-all duration-300 overflow-hidden flex flex-col justify-between group hover:-translate-y-1">
       <div>
@@ -26,21 +34,23 @@ export function BlogCard({ post }: BlogCardProps) {
           />
 
           {/* Category Badge on Image */}
-          <div className="absolute top-3 left-3 z-10">
-            <Badge 
-              variant="indigo" 
-              className="bg-white/95 backdrop-blur-xs font-bold text-xs text-indigo-700 shadow-xs border-indigo-100 px-2.5 py-0.5 rounded-full"
-            >
-              {post.category}
-            </Badge>
-          </div>
+          {post.category?.name && (
+            <div className="absolute top-3 left-3 z-10">
+              <Badge
+                variant="indigo"
+                className="bg-white/95 backdrop-blur-xs font-bold text-xs text-indigo-700 shadow-xs border-indigo-100 px-2.5 py-0.5 rounded-full"
+              >
+                {post.category.name}
+              </Badge>
+            </div>
+          )}
         </div>
 
         {/* Content Body */}
         <div className="p-5 sm:p-6 space-y-3">
           {/* Date & Views */}
           <div className="flex items-center justify-between text-xs text-slate-400 font-medium">
-            <span>{post.date}</span>
+            <span>{formattedDate}</span>
             <span className="flex items-center gap-1">
               <Eye className="w-3.5 h-3.5 text-slate-400" />
               <span>{post.views.toLocaleString()}</span>
@@ -49,9 +59,7 @@ export function BlogCard({ post }: BlogCardProps) {
 
           {/* Title */}
           <h3 className="font-extrabold text-slate-900 text-lg leading-snug tracking-tight group-hover:text-indigo-600 transition-colors line-clamp-2">
-            <Link href={`/blog/${post.slug}`}>
-              {post.title}
-            </Link>
+            <Link href={`/blog/${post.slug}`}>{post.title}</Link>
           </h3>
 
           {/* Excerpt */}
@@ -66,19 +74,25 @@ export function BlogCard({ post }: BlogCardProps) {
         {/* Author info */}
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="relative w-9.75 h-9.75 rounded-full overflow-hidden bg-slate-200 shrink-0">
-            <Image
-              src={post.author.avatar}
-              alt={post.author.name}
-              fill
-              className="object-cover"
-            />
+            {post.author_avatar ? (
+              <Image
+                src={post.author_avatar}
+                alt={post.author}
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center font-bold text-xs text-slate-600 bg-slate-200">
+                {post.author?.charAt(0) || "A"}
+              </div>
+            )}
           </div>
           <div className="min-w-0">
             <p className="text-[13px] font-bold text-slate-900 truncate leading-tight">
-              {post.author.name}
+              {post.author}
             </p>
             <p className="text-[11px] text-slate-400 font-medium truncate max-w-[130px] sm:max-w-[160px]">
-              {post.author.role}
+              {post.author_role}
             </p>
           </div>
         </div>

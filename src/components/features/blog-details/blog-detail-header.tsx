@@ -2,15 +2,25 @@
 
 import Link from "next/link";
 import { ArrowLeft, Eye, Calendar } from "lucide-react";
-import { BlogPost } from "@/data";
+import type { BlogPostDataWithCategory } from "@/services/blog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 interface BlogDetailHeaderProps {
-  post: BlogPost;
+  post: BlogPostDataWithCategory;
 }
 
 export function BlogDetailHeader({ post }: BlogDetailHeaderProps) {
+  const formattedDate = post.published_at
+    ? new Date(post.published_at).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "Recently";
+
+  const categoryName = post.category?.name ?? "Article";
+
   return (
     <div className="space-y-6">
       {/* Top Nav: Back button & Breadcrumbs */}
@@ -26,7 +36,10 @@ export function BlogDetailHeader({ post }: BlogDetailHeaderProps) {
           </Button>
         </Link>
 
-        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+        <nav
+          aria-label="Breadcrumb"
+          className="flex items-center gap-2 text-xs font-semibold text-slate-500"
+        >
           <Link href="/" className="hover:text-slate-800 transition-colors">
             Home
           </Link>
@@ -36,15 +49,18 @@ export function BlogDetailHeader({ post }: BlogDetailHeaderProps) {
           </Link>
           <span>/</span>
           <span className="text-indigo-600 truncate max-w-[200px]">
-            {post.category}
+            {categoryName}
           </span>
         </nav>
       </div>
 
       {/* Badges & Meta info */}
       <div className="flex items-center gap-3 flex-wrap">
-        <Badge variant="indigo" className="font-bold px-3 py-1 rounded-full text-xs">
-          {post.category}
+        <Badge
+          variant="indigo"
+          className="font-bold px-3 py-1 rounded-full text-xs"
+        >
+          {categoryName}
         </Badge>
         <span className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
           <Eye className="w-3.5 h-3.5 text-slate-400" />
@@ -53,7 +69,7 @@ export function BlogDetailHeader({ post }: BlogDetailHeaderProps) {
         <span className="text-slate-300">•</span>
         <span className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
           <Calendar className="w-3.5 h-3.5 text-slate-400" />
-          <span>{post.date}</span>
+          <span>{formattedDate}</span>
         </span>
       </div>
 

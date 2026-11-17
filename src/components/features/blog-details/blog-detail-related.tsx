@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { BlogPost } from "@/data";
+import type { BlogPostDataWithCategory } from "@/services/blog";
 import { Container } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { BlogCard } from "@/components/features/blog/blog-card";
 
 interface BlogDetailRelatedProps {
-  posts: BlogPost[];
+  posts: BlogPostDataWithCategory[];
   category: string;
 }
 

@@ -15,3 +15,4 @@ export * from "./user-avatar";
 export * from "./scroll-to-top";
 export * from "./image-upload";
 export * from "./gallery-upload";
+export * from "./app-loader";

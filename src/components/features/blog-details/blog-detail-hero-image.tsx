@@ -1,8 +1,8 @@
 import Image from "next/image";
-import { BlogPost } from "@/data";
+import type { BlogPostDataWithCategory } from "@/services/blog";
 
 interface BlogDetailHeroImageProps {
-  post: BlogPost;
+  post: BlogPostDataWithCategory;
 }
 
 export function BlogDetailHeroImage({ post }: BlogDetailHeroImageProps) {

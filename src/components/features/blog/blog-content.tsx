@@ -1,81 +1,62 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { BookOpen, RotateCcw } from "lucide-react";
 import { Container } from "@/components/common";
 import { AppPagination } from "@/components/common/app-pagination";
 import { Button } from "@/components/ui/button";
-import {
-  blogPosts,
-  blogCategories,
-} from "@/data";
+import { useDebounce } from "@/hooks";
+import { useBlogs, useBlogCategories } from "@/services/blog";
 import { BlogHero } from "./blog-hero";
 import { BlogCategories } from "./blog-categories";
 import { BlogFeaturedCard } from "./blog-featured-card";
 import { BlogCard } from "./blog-card";
+import { BlogCardSkeleton } from "./blog-card-skeleton";
 
 const POSTS_PER_PAGE = 6;
 
 export function BlogContent() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState("all");
+  const [activeCategoryId, setActiveCategoryId] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Filter posts based on category and search query
-  const filteredPosts = useMemo(() => {
-    return blogPosts.filter((post) => {
-      // Category filter
-      if (activeCategory !== "all" && post.categorySlug !== activeCategory) {
-        return false;
-      }
+  // Reusable custom debounce hook
+  const debouncedSearch = useDebounce(searchQuery.trim(), 400);
 
-      // Search query filter
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase();
-        const matchesTitle = post.title.toLowerCase().includes(query);
-        const matchesExcerpt = post.excerpt.toLowerCase().includes(query);
-        const matchesTag = post.tags.some((t) => t.toLowerCase().includes(query));
-        const matchesCategory = post.category.toLowerCase().includes(query);
-        if (!matchesTitle && !matchesExcerpt && !matchesTag && !matchesCategory) {
-          return false;
-        }
-      }
+  // 1. Fetch Categories
+  const { data: categories = [], isLoading: isCategoriesLoading } =
+    useBlogCategories();
 
-      return true;
-    });
-  }, [searchQuery, activeCategory]);
+  // 2. Fetch Published Blogs with Pagination, Search & Category Filter
+  const { data: blogsResponse, isLoading: isBlogsLoading } = useBlogs({
+    page: currentPage,
+    pageLimit: POSTS_PER_PAGE,
+    search: debouncedSearch,
+    categoryId: activeCategoryId === "all" ? undefined : activeCategoryId,
+  });
 
-  // Latest post on top (only on default "All" category view without search)
-  const featuredPost = useMemo(() => {
-    if (activeCategory === "all" && !searchQuery.trim()) {
-      return filteredPosts[0] || null;
-    }
-    return null;
-  }, [activeCategory, searchQuery, filteredPosts]);
+  const blogs = blogsResponse?.data ?? [];
+  const totalPages = blogsResponse?.totalPages ?? 0;
 
-  // Exclude featured post from grid only on default view so it isn't duplicated
-  const gridPosts = useMemo(() => {
-    if (featuredPost) {
-      return filteredPosts.filter((p) => p.id !== featuredPost.id);
-    }
-    return filteredPosts;
-  }, [filteredPosts, featuredPost]);
-
-  // Pagination calculation
-  const totalPages = Math.ceil(gridPosts.length / POSTS_PER_PAGE);
-  const paginatedPosts = useMemo(() => {
-    const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
-    return gridPosts.slice(startIndex, startIndex + POSTS_PER_PAGE);
-  }, [gridPosts, currentPage]);
+  // Featured post is shown only on page 1 with no search and "all" category
+  const isDefaultView =
+    currentPage === 1 && !debouncedSearch && activeCategoryId === "all";
+  const featuredPost = isDefaultView && blogs.length > 0 ? blogs[0] : null;
+  const gridPosts = featuredPost ? blogs.slice(1) : blogs;
 
   const handleResetFilters = () => {
     setSearchQuery("");
-    setActiveCategory("all");
+    setActiveCategoryId("all");
     setCurrentPage(1);
   };
 
-  const handleCategorySelect = (slug: string) => {
-    setActiveCategory(slug);
+  const handleCategorySelect = (id: string) => {
+    setActiveCategoryId(id);
+    setCurrentPage(1);
+  };
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
     setCurrentPage(1);
   };
 
@@ -84,10 +65,7 @@ export function BlogContent() {
       {/* 1. Hero Header with Search */}
       <BlogHero
         searchQuery={searchQuery}
-        onSearchChange={(q) => {
-          setSearchQuery(q);
-          setCurrentPage(1);
-        }}
+        onSearchChange={handleSearchChange}
         onSearchClear={() => setSearchQuery("")}
       />
 
@@ -95,70 +73,71 @@ export function BlogContent() {
       <section className="py-12 sm:py-16">
         <Container>
           <div className="space-y-8 sm:space-y-10">
-            
             {/* Category Filter Pills Bar */}
             <div className="border-b border-slate-100 pb-5">
               <BlogCategories
-                categories={blogCategories}
-                activeCategory={activeCategory}
+                categories={categories}
+                isLoading={isCategoriesLoading}
+                activeCategoryId={activeCategoryId}
                 onSelectCategory={handleCategorySelect}
               />
             </div>
 
-            {/* Featured Post Banner (full width) */}
-            {featuredPost && (
-              <div className="pt-2">
-                <BlogFeaturedCard post={featuredPost} />
+            {/* Loading State: Realistic BlogCardSkeleton */}
+            {isBlogsLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                {Array.from({ length: 6 }).map((_, idx) => (
+                  <BlogCardSkeleton key={idx} />
+                ))}
               </div>
-            )}
-
-            {/* 3-Column Blog Cards Grid (Full Width) */}
-            <div>
-              {paginatedPosts.length > 0 ? (
-                <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
-                    {paginatedPosts.map((post) => (
-                      <BlogCard key={post.id} post={post} />
-                    ))}
-                  </div>
-
-                  {/* Pagination */}
-                  {totalPages > 1 && (
-                    <div className="pt-10 mt-10 border-t border-slate-100 flex justify-center">
-                      <AppPagination
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        onPageChange={(page) => setCurrentPage(page)}
-                      />
-                    </div>
-                  )}
-                </>
-              ) : (
-                /* Empty state */
-                <div className="bg-slate-50 rounded-3xl p-10 sm:p-14 text-center border border-slate-200/80 space-y-4 mx-auto">
+            ) : blogs.length === 0 ? (
+              /* Empty State */
+               <div className="bg-slate-50 rounded-3xl p-10 sm:p-14 text-center border border-slate-200/80 space-y-4 mx-auto">
                   <div className="w-14 h-14 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center mx-auto">
                     <BookOpen className="w-7 h-7" />
                   </div>
                   <h3 className="text-xl font-bold text-slate-900">
                     No Articles Found
                   </h3>
-                  <p className="text-slate-500 text-sm">
+                  <p className="text-muted-foreground text-sm font-medium">
                     We couldn&apos;t find any articles matching your search or filters. Try searching for different keywords or clear your active filters.
                   </p>
                   <div className="pt-2">
                     <Button
-                      variant="default"
+                      variant="outline"
                       onClick={handleResetFilters}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm px-5 py-2.5 rounded-xl cursor-pointer"
+                      className="font-semibold text-sm px-2.5 rounded-lg cursor-pointer"
                     >
-                      <RotateCcw className="w-4 h-4 mr-2" />
-                      <span>Reset All Filters</span>
+                      <RotateCcw className="w-4 h-4" />
+                      <span>Reset Filters</span>
                     </Button>
                   </div>
                 </div>
-              )}
-            </div>
+            ) : (
+              /* Blog Posts Display */
+              <div className="space-y-8 sm:space-y-12">
+                {/* Featured Post (Only on Default Page 1 View) */}
+                {featuredPost && <BlogFeaturedCard post={featuredPost} />}
 
+                {/* Grid of Articles */}
+                {gridPosts.length > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                    {gridPosts.map((post) => (
+                      <BlogCard key={post.id} post={post} />
+                    ))}
+                  </div>
+                )}
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <AppPagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                  />
+                )}
+              </div>
+            )}
           </div>
         </Container>
       </section>
