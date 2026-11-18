@@ -4,6 +4,7 @@ import {
   InputWithLabel,
   SelectWithLabel,
   TextareaWithLabel,
+  Loader,
 } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +12,7 @@ import {
   bannerTypeOptions,
   type BannerAdsFormValues,
 } from "@/schemas";
+import { useBannerAds } from "@/services";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Ruler, Send, Sparkles } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
@@ -25,37 +27,40 @@ const sizePresets = [
 ];
 
 export function BannerAdsForm() {
+  const { mutate: submitInquiry, isPending } = useBannerAds();
 
   const {
     control,
     handleSubmit,
     setValue,
     reset,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<BannerAdsFormValues>({
     resolver: zodResolver(bannerAdsFormSchema),
     defaultValues: {
       name: "",
       email: "",
       mobile: "",
-      bannerType: "",
+      banner_type: "",
       width: "",
       height: "",
       notes: "",
     },
   });
 
-  const onSubmit = async (_data: BannerAdsFormValues) => {
-    // Simulate network API submission
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    reset();
+  const onSubmit = (data: BannerAdsFormValues) => {
+    submitInquiry(data, {
+      onSuccess: () => {
+        reset();
+      },
+    });
   };
 
   const applyPreset = (preset: (typeof sizePresets)[number]) => {
     setValue("width", preset.width, { shouldValidate: true });
     setValue("height", preset.height, { shouldValidate: true });
     if (preset.type) {
-      setValue("bannerType", preset.type, { shouldValidate: true });
+      setValue("banner_type", preset.type, { shouldValidate: true });
     }
   };
 
@@ -86,6 +91,7 @@ export function BannerAdsForm() {
                 label="Contact Name"
                 placeholder="Rahul Sharma"
                 error={errors.name?.message}
+                disabled={isPending}
                 {...field}
               />
             )}
@@ -99,15 +105,16 @@ export function BannerAdsForm() {
                 id="banner-email"
                 label="Email Address"
                 type="email"
-                placeholder="rahul@business.com"
+                placeholder="rahul@brand.com"
                 error={errors.email?.message}
+                disabled={isPending}
                 {...field}
               />
             )}
           />
         </div>
 
-        {/* Row 2: Mobile Number & Banner Placement */}
+        {/* Row 2: Mobile Number and Banner Placement */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <Controller
             name="mobile"
@@ -115,55 +122,60 @@ export function BannerAdsForm() {
             render={({ field }) => (
               <InputWithLabel
                 id="banner-mobile"
-                label="Mobile Number"
                 type="tel"
-                placeholder="+91 98765 43210"
+                label="Mobile Number"
+                placeholder="98765 43210"
                 error={errors.mobile?.message}
+                disabled={isPending}
                 {...field}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9]/g, "");
+                  field.onChange(val);
+                }}
               />
             )}
           />
 
           <Controller
-            name="bannerType"
+            name="banner_type"
             control={control}
             render={({ field }) => (
               <SelectWithLabel
                 id="banner-type"
-                label="Banner Placement"
-                placeholder="Select Banner Type"
+                label="Preferred Ad Slot"
+                placeholder="Choose banner slot"
                 value={field.value}
                 onValueChange={field.onChange}
                 options={[...bannerTypeOptions]}
-                error={errors.bannerType?.message}
+                error={errors.banner_type?.message}
+                disabled={isPending}
               />
             )}
           />
         </div>
 
-        {/* Quick Preset Selector */}
-        <div className="p-3.5 bg-slate-50/80 rounded-2xl border border-slate-200/70">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600 mb-2.5">
+        {/* Preset Dimension Chips */}
+        <div>
+          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-2">
             <Ruler size={13} className="text-indigo-600" />
-            <span>Standard Dimension Presets (Click to autofill):</span>
+            <span>Popular Standard Sizes (Click to Auto-fill)</span>
           </div>
           <div className="flex flex-wrap gap-2">
             {sizePresets.map((preset) => (
-              <Button
+              <button
                 key={preset.label}
                 type="button"
-                variant="outline"
-                size="xs"
                 onClick={() => applyPreset(preset)}
-                className="h-7 text-xs px-2.5 rounded-lg border-slate-200 bg-white text-slate-700 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/50 shadow-none font-medium cursor-pointer"
+                disabled={isPending}
+                className="text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 hover:border-indigo-400 hover:bg-indigo-50/50 hover:text-indigo-700 font-medium transition-all text-left cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {preset.label}
-              </Button>
+              </button>
             ))}
           </div>
         </div>
 
-        {/* Row 3: Width and Height */}
+        {/* Row 3: Custom Width and Height */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <Controller
             name="width"
@@ -171,9 +183,10 @@ export function BannerAdsForm() {
             render={({ field }) => (
               <InputWithLabel
                 id="banner-width"
-                label="Ad Width"
-                placeholder="e.g. 728px or 100%"
+                label="Banner Width"
+                placeholder="e.g., 728px"
                 error={errors.width?.message}
+                disabled={isPending}
                 {...field}
               />
             )}
@@ -185,9 +198,10 @@ export function BannerAdsForm() {
             render={({ field }) => (
               <InputWithLabel
                 id="banner-height"
-                label="Ad Height"
-                placeholder="e.g. 90px or 250px"
+                label="Banner Height"
+                placeholder="e.g., 90px"
                 error={errors.height?.message}
+                disabled={isPending}
                 {...field}
               />
             )}
@@ -205,6 +219,7 @@ export function BannerAdsForm() {
               rows={4}
               placeholder="Share your landing page URL, target city/categories, planned duration (e.g., 30 days), or creative design assistance needs..."
               error={errors.notes?.message}
+              disabled={isPending}
               {...field}
             />
           )}
@@ -214,12 +229,21 @@ export function BannerAdsForm() {
         <div className="pt-2">
           <Button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isPending}
             size="lg"
-            className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-600/20 hover:shadow-lg hover:-translate-y-0.5 h-11"
+            className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 shadow-md shadow-indigo-600/20 h-11 cursor-pointer font-semibold"
           >
-            <Send size={16} />
-            <span>{isSubmitting ? "Submitting Campaign Details..." : "Submit Banner Ads Enquiry"}</span>
+            {isPending ? (
+              <>
+                <Loader inline size="sm" />
+                <span>Submitting Campaign Details...</span>
+              </>
+            ) : (
+              <>
+                <Send size={16} />
+                <span>Submit Banner Ads Enquiry</span>
+              </>
+            )}
           </Button>
         </div>
       </form>

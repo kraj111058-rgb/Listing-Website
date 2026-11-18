@@ -21,11 +21,10 @@ export const bannerAdsFormSchema = z.object({
 
   mobile: z
     .string()
-    .min(10, "Please enter a valid 10-digit mobile number")
-    .max(15, "Mobile number too long")
-    .regex(/^[0-9+\s-]{10,15}$/, "Please enter a valid phone number"),
+    .min(1, "Phone number is required")
+    .regex(/^[0-9]{10}$/, "Please enter a valid phone number (at least 10 digits)"),
 
-  bannerType: z.string().min(1, "Please select a banner placement option"),
+  banner_type: z.string().min(1, "Please select a banner placement option"),
 
   width: z
     .string()
