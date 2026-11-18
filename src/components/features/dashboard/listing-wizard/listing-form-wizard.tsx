@@ -103,7 +103,7 @@ export function ListingFormWizard({
   listingId,
 }: ListingFormWizardProps) {
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(5);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   // Unsaved changes alert modal state

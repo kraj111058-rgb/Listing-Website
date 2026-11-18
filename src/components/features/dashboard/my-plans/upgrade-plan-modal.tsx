@@ -15,6 +15,7 @@ import {
 import { Modal } from "@/components/common/modal";
 import { SelectWithLabel } from "@/components/common/select-with-label";
 import { Button } from "@/components/ui/button";
+import { useActiveSubscriptionPlans, resolvePlanTier } from "@/services";
 import type { ListingPlanItem } from "@/data";
 
 interface UpgradePlanModalProps {
@@ -55,8 +56,22 @@ export function UpgradePlanModal({
 
   const currentListing = listings.find((l) => l.id === activeListingId) || listings[0];
 
+  const { data: dbPlans } = useActiveSubscriptionPlans();
+
+  // Dynamically resolve active plans based on tier
+  const featuredPlan = dbPlans?.find(
+    (p) => resolvePlanTier(p.name) === "featured"
+  );
+
+  const featuredProPlan = dbPlans?.find(
+    (p) => resolvePlanTier(p.name) === "featured-pro"
+  );
+
+  const featuredPrice = featuredPlan ? Number(featuredPlan.price) : 199;
+  const featuredProPrice = featuredProPlan ? Number(featuredProPlan.price) : 499;
+
   // Pricing calculations
-  const basePriceNum = chosenPlanId === "featured" ? 199 : 499;
+  const basePriceNum = chosenPlanId === "featured" ? featuredPrice : featuredProPrice;
   const gst = Math.round(basePriceNum * 0.18 * 100) / 100;
   const total = (basePriceNum + gst).toFixed(2);
 
@@ -170,22 +185,22 @@ export function UpgradePlanModal({
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/80">
-                  PACKAGE 2
+                  {featuredPlan?.tag || "PACKAGE 2"}
                 </span>
                 <span className="text-xs font-extrabold text-slate-900">
-                  ₹199 <span className="text-[10px] text-slate-500 font-normal">/ 3 mos</span>
+                  ₹{featuredPrice} <span className="text-[10px] text-slate-500 font-normal">{featuredPlan?.period || "/ 3 mos"}</span>
                 </span>
               </div>
               <h5 className="text-sm font-extrabold text-slate-900 flex items-center gap-1.5">
                 <Crown className="size-4 text-amber-500" />
-                <span>Featured Listing</span>
+                <span>{featuredPlan?.name || "Featured Listing"}</span>
               </h5>
               <p className="text-[11px] text-slate-500 mt-1 leading-snug">
-                Featured on homepage, category priority, up to 5 services & products.
+                {featuredPlan?.headline || "Featured on homepage, category priority, up to 5 services & products."}
               </p>
             </div>
 
-            {/* Featured Pro - ₹499 */}
+            {/* Featured Pro */}
             <div
               onClick={() => setChosenPlanId("featured-pro")}
               className={`p-3.5 rounded-2xl border-2 transition-all cursor-pointer relative ${
@@ -196,18 +211,18 @@ export function UpgradePlanModal({
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[10px] font-extrabold uppercase tracking-wider text-purple-600 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200/80">
-                  PACKAGE 3
+                  {featuredProPlan?.tag || "PACKAGE 3"}
                 </span>
                 <span className="text-xs font-extrabold text-slate-900">
-                  ₹499 <span className="text-[10px] text-slate-500 font-normal">/ 3 mos</span>
+                  ₹{featuredProPrice} <span className="text-[10px] text-slate-500 font-normal">{featuredProPlan?.period || "/ 3 mos"}</span>
                 </span>
               </div>
               <h5 className="text-sm font-extrabold text-slate-900 flex items-center gap-1.5">
                 <Rocket className="size-4 text-purple-600" />
-                <span>Featured Pro</span>
+                <span>{featuredProPlan?.name || "Featured Pro"}</span>
               </h5>
               <p className="text-[11px] text-slate-500 mt-1 leading-snug">
-                Maximum search power, homepage spotlight, up to 10 services & products.
+                {featuredProPlan?.headline || "Maximum search power, homepage spotlight, up to 10 services & products."}
               </p>
             </div>
           </div>
@@ -216,7 +231,13 @@ export function UpgradePlanModal({
         {/* Step 3: Billing & GST Breakdown */}
         <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1.5 text-xs">
           <div className="flex items-center justify-between text-slate-600">
-            <span>Package Price (3 Months)</span>
+            <span>
+              Package Price (
+              {chosenPlanId === "featured"
+                ? (featuredPlan?.period?.replace(/^\/\s*/, "") || "3 Months")
+                : (featuredProPlan?.period?.replace(/^\/\s*/, "") || "3 Months")}
+              )
+            </span>
             <span className="font-semibold text-slate-800">₹{basePriceNum}.00</span>
           </div>
           <div className="flex items-center justify-between text-slate-600">

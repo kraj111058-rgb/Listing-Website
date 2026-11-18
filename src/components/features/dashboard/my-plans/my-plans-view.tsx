@@ -3,9 +3,9 @@
 import { AdvertisePackages } from "@/components/features/advertise";
 import {
   initialListingPlans,
-  type ListingPackageItem,
   type ListingPlanItem,
 } from "@/data";
+import { resolvePlanTier, useActiveSubscriptionPlans } from "@/services";
 import { useState } from "react";
 import { ListingPlansTable } from "./listing-plans-table";
 import { MyPlansStats } from "./my-plans-stats";
@@ -13,6 +13,7 @@ import { UpgradePlanModal } from "./upgrade-plan-modal";
 
 export function MyPlansView() {
   const [listingPlans, setListingPlans] = useState<ListingPlanItem[]>(initialListingPlans);
+  const { data: dbPlans } = useActiveSubscriptionPlans();
 
   // Upgrade modal state
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
@@ -26,17 +27,15 @@ export function MyPlansView() {
     setIsUpgradeModalOpen(true);
   };
 
-  const handleSelectPlanFromGrid = (plan: ListingPackageItem) => {
-    if (plan.id === "featured" || plan.id === "featured-pro") {
-      setSelectedPlanId(plan.id);
-      setIsUpgradeModalOpen(true);
-    }
-  };
-
   const handleConfirmUpgrade = (listingId: string, planId: "featured" | "featured-pro") => {
     const isPro = planId === "featured-pro";
-    const planName = isPro ? "Featured Pro" : "Featured Listing";
-    const priceStr = isPro ? "₹499" : "₹199";
+    const matchedPlan = dbPlans?.find(
+      (p) => resolvePlanTier(p.name) === planId
+    );
+
+    const planName = (matchedPlan ? matchedPlan.name : isPro ? "Featured Pro" : "Featured Listing") as ListingPlanItem["planName"];
+    const priceStr = matchedPlan ? `₹${matchedPlan.price}` : isPro ? "₹499" : "₹199";
+    const periodStr = matchedPlan?.period || "/ 3 months";
 
     // Update listing in list
     setListingPlans((prev) =>
@@ -47,7 +46,7 @@ export function MyPlansView() {
             planId,
             planName,
             price: priceStr,
-            period: "/ 3 months",
+            period: periodStr,
             status: "Active",
             startDate: "Today",
             expiryDate: "06 Feb 2027",

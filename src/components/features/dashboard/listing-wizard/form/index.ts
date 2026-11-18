@@ -5,3 +5,4 @@ export * from "./step-3-photos-social";
 export * from "./step-4-seo-details";
 export * from "./step-5-choose-plan";
 export * from "./form-success-card";
+export * from "./plan-card-skeleton";
