@@ -409,6 +409,9 @@ Always reuse common input components from `@/components/common`:
 13. **Don't import server-only Supabase clients into client components**.
 14. **Don't re-invent custom loaders or inputs** — use common `Loader`, `InputWithLabel`, etc.
 15. **Don't leave `console.log` or unused imports** in any file.
+16. **Don't create redundant intermediate mapping objects** — consume query responses directly in JSX (`data.map(...)`) to keep code clean and concise.
+17. **Don't leave legacy mock data in `src/data/`** — purge or deprecate mock arrays immediately when a module is migrated to Supabase.
+18. **Don't alter visual styling during dynamic integration** — preserve 100% of original Tailwind classes, font sizes, colors, and layout (Zero Visual Regression).
 
 ---
 
@@ -427,3 +430,6 @@ Always reuse common input components from `@/components/common`:
 11. **Do provide skeleton loaders** during loading and structured empty states on zero results.
 12. **Do catch Postgres code `23505`** and format user-friendly duplicate error messages.
 13. **Do verify with `node ./node_modules/typescript/bin/tsc --noEmit`** before declaring any task complete.
+14. **Do consume query data directly in JSX** without redundant intermediate transformation arrays.
+15. **Do purge migrated mock data immediately** from `src/data/` adhering to the Zero Dead Code Policy.
+16. **Do preserve 100% of original Tailwind classes** and styling when converting static UI to dynamic data.

@@ -65,4 +65,7 @@ Next.js App Router (src/app/)
 - **Search Debounce & Page Reset**: Debounce search with `useDebounce(query, 400)` and reset to page 1 on filter/search change.
 - **Duplicate Error Handling**: Catch Postgres code `23505` in services and format friendly user messages for active inquiries or duplicate records.
 - **Upload Storage ONLY on Submit**: Hold `File` in state, upload strictly on form submission, and clean up orphan files.
+- **Direct Data Consumption**: Consume query responses directly in JSX without redundant intermediate mapping arrays (`const displayPackages = data.map(...)`).
+- **Purge Migrated Mock Data**: Delete or deprecate legacy mock data arrays/files (`packages.data.ts`) immediately after connecting Supabase (Zero Dead Code).
+- **Zero Visual Regression**: Preserve 100% of original Tailwind classes, font sizes, colors, and layout when migrating static UI to dynamic data.
 - **Zero Console.log & Zero Dead Code**: Remove all debugging statements, mock submit handlers, and unused imports before completing tasks.
