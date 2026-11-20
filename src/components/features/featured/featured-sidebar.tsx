@@ -1,10 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { Crown, Sparkles, CheckCircle2, ArrowRight, TrendingUp } from "lucide-react";
-import { categoriesList } from "@/data";
+import { Crown, Sparkles, CheckCircle2, ArrowRight } from "lucide-react";
+import { useActiveCategories } from "@/services/category";
+import { CategorySortBy, SortOrder } from "@/enums";
 
 export function FeaturedSidebar() {
+  const { data: categories = [], isLoading } = useActiveCategories({
+    sortBy: CategorySortBy.CREATED_AT,
+    sortOrder: SortOrder.DESC,
+  });
+
+  const displayCategories = categories.slice(0, 15);
+
   return (
     <aside className="space-y-6">
       {/* 1. Get Featured Widget */}
@@ -61,15 +69,32 @@ export function FeaturedSidebar() {
         </h4>
 
         <div className="flex flex-wrap gap-1.5">
-          {categoriesList.slice(0, 10).map((cat) => (
-            <Link
-              key={cat.slug}
-              href={`/listings?category=${cat.slug}`}
-              className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-primary/10 text-slate-700 hover:text-primary text-xs font-semibold transition-colors"
-            >
-              {cat.name}
-            </Link>
-          ))}
+          {isLoading
+            ? Array.from({ length: 8 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-7 w-20 bg-slate-100 rounded-lg animate-pulse"
+                />
+              ))
+            : displayCategories.map((cat) => (
+                <Link
+                  key={cat.id || cat.slug}
+                  href={`/listings?category=${cat.slug}`}
+                  className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-primary/10 text-slate-700 hover:text-primary text-xs font-semibold transition-colors"
+                >
+                  {cat.name}
+                </Link>
+              ))}
+        </div>
+
+        <div className="pt-2.75 border-t border-slate-100">
+          <Link
+            href="/categories"
+            className="w-full py-2 px-3 rounded-lg bg-slate-50 hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 border border-slate-200/80 hover:border-indigo-200 text-sm font-bold inline-flex items-center justify-center gap-1.5 transition-all"
+          >
+            <span>View All</span>
+            <ArrowRight size={13} />
+          </Link>
         </div>
       </div>
     </aside>

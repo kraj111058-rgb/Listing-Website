@@ -15,7 +15,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
-import { daysOfWeek, INDIAN_STATES, getCitiesByState } from "@/data";
+import { daysOfWeek } from "@/data";
+import { useActiveStates, useActiveCities } from "@/services/location";
 import type { ListingWizardFormValues } from "@/schemas";
 import Link from "next/link";
 
@@ -40,7 +41,21 @@ export function Step2ContactLocation() {
   const latitude = useWatch({ control, name: "latitude" }) || "";
   const longitude = useWatch({ control, name: "longitude" }) || "";
 
-  const currentCities = useMemo(() => getCitiesByState(currentState), [currentState]);
+  const { data: states = [], isLoading: isStatesLoading } = useActiveStates();
+  const { data: allCities = [], isLoading: isCitiesLoading } = useActiveCities();
+
+  const selectedState = useMemo(() => {
+    return states.find(
+      (s) => s.id === currentState || s.name === currentState || s.code === currentState
+    );
+  }, [states, currentState]);
+
+  const currentCities = useMemo(() => {
+    if (!selectedState) return [];
+    return allCities.filter(
+      (c) => c.state_id === selectedState.id || c.state_code === selectedState.code
+    );
+  }, [selectedState, allCities]);
 
   const hasValidCoordinates = useMemo(() => {
     const lat = Number(latitude);
@@ -122,21 +137,28 @@ export function Step2ContactLocation() {
               <SelectWithLabel
                 id="biz-state"
                 label="State"
-                placeholder="Select State"
+                placeholder={isStatesLoading ? "Loading states..." : "Select State"}
                 value={field.value}
                 onValueChange={(newState) => {
                   field.onChange(newState);
-                  const cities = getCitiesByState(newState);
-                  if (cities.length > 0) {
-                    setValue("city", cities[0], {
+                  const stateObj = states.find(
+                    (s) => s.id === newState || s.name === newState || s.code === newState
+                  );
+                  const citiesForState = stateObj
+                    ? allCities.filter(
+                        (c) => c.state_id === stateObj.id || c.state_code === stateObj.code
+                      )
+                    : [];
+                  if (citiesForState.length > 0) {
+                    setValue("city", citiesForState[0].id, {
                       shouldValidate: true,
                     });
                   } else {
                     setValue("city", "", { shouldValidate: true });
                   }
                 }}
-                options={INDIAN_STATES.map((st) => ({
-                  value: st.name,
+                options={states.map((st) => ({
+                  value: st.id,
                   label: st.name,
                 }))}
                 error={error?.message}
@@ -148,19 +170,37 @@ export function Step2ContactLocation() {
             name="city"
             control={control}
             render={({ field, fieldState: { error } }) => {
-              const options =
-                field.value && !currentCities.includes(field.value)
-                  ? [field.value, ...currentCities]
-                  : currentCities;
+              const options = currentCities.map((c) => ({
+                value: c.id,
+                label: c.name,
+              }));
+
+              if (field.value && !currentCities.some((c) => c.id === field.value)) {
+                const existingCity = allCities.find(
+                  (c) => c.id === field.value || c.name === field.value
+                );
+                if (existingCity) {
+                  options.unshift({ value: existingCity.id, label: existingCity.name });
+                }
+              }
 
               return (
                 <SelectWithLabel
                   id="biz-city"
                   label="City"
-                  placeholder="Select City"
+                  placeholder={
+                    isCitiesLoading
+                      ? "Loading cities..."
+                      : !currentState
+                      ? "Select State first"
+                      : currentCities.length === 0
+                      ? "No cities found"
+                      : "Select City"
+                  }
                   value={field.value}
                   onValueChange={(city) => field.onChange(city)}
-                  options={options.map((c) => ({ value: c, label: c }))}
+                  options={options}
+                  disabled={!currentState || isCitiesLoading}
                   error={error?.message}
                 />
               );

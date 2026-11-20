@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { Container } from "@/components/common";
-import { citiesList } from "@/data";
+import { useActiveCities } from "@/services/location";
 
 export default function BrowseCity() {
+  const { data: cities = [], isLoading } = useActiveCities();
+
   return (
     <section className="py-20 bg-slate-50/70">
       <Container>
@@ -18,22 +20,34 @@ export default function BrowseCity() {
           </p>
         </div>
 
-        {/* 24 Cities Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 sm:gap-3.5">
-          {citiesList.map((city) => (
-            <Link
-              key={city.slug}
-              href={`/listings?city=${city.slug}`}
-              className="flex flex-col items-center justify-center gap-2 p-4 bg-white rounded-2xl border border-slate-100 shadow-[0_4px_24px_rgba(0,0,0,0.05)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group text-center"
-            >
-              <span className="text-3xl sm:text-4xl group-hover:scale-110 transition-transform">
-                {city.emoji}
-              </span>
-              <span className="text-sm font-semibold text-slate-800 line-clamp-1">
-                {city.name}
-              </span>
-            </Link>
-          ))}
+        {/* Cities Grid - 1 Row = 5 Columns */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-4">
+          {isLoading
+            ? Array.from({ length: 15 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between px-4.5 py-4 bg-white rounded-xl border border-slate-200/80 shadow-2xs animate-pulse"
+                >
+                  <div className="h-4 bg-slate-200 rounded w-24" />
+                  <div className="h-4 bg-slate-100 rounded w-8" />
+                </div>
+              ))
+            : cities.map((city) => (
+                <Link
+                  key={city.id || city.slug}
+                  href={`/listings?city=${city.slug}`}
+                  className="group flex items-center justify-between px-4.5 py-4 bg-white rounded-xl border border-slate-200/80 shadow-2xs hover:border-indigo-400 hover:bg-indigo-50/20 hover:shadow-md transition-all duration-200"
+                >
+                  <span className="text-sm font-bold text-slate-800 group-hover:text-indigo-600 transition-colors truncate">
+                    {city.name}
+                  </span>
+                  {typeof city.listings_count === "number" && city.listings_count > 0 && (
+                    <span className="text-[11px] font-bold text-slate-500 bg-slate-100 group-hover:bg-indigo-100 group-hover:text-indigo-700 px-2.5 py-0.5 rounded-md transition-colors shrink-0 ml-2">
+                      {city.listings_count}
+                    </span>
+                  )}
+                </Link>
+              ))}
         </div>
       </Container>
     </section>

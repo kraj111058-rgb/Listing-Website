@@ -1,7 +1,8 @@
 "use client";
 
 import { SlidersHorizontal, Star, RotateCcw, Check } from "lucide-react";
-import { categoriesList, citiesList } from "@/data";
+import { useActiveCategories } from "@/services/category";
+import { useActiveCities } from "@/services/location";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { SelectWithLabel } from "@/components/common";
@@ -29,6 +30,8 @@ export function ListingsSidebar({
   onFeaturedChange,
   onClearFilters,
 }: ListingsSidebarProps) {
+  const { data: categories = [] } = useActiveCategories();
+  const { data: cities = [] } = useActiveCities();
   const hasActiveFilters = Boolean(
     selectedCategory || selectedCity || minRating > 0 || featuredOnly
   );
@@ -69,8 +72,8 @@ export function ListingsSidebar({
           onValueChange={(val) => onCategoryChange(val === "all" ? "" : val)}
           triggerClassName="bg-slate-50/50 hover:bg-white"
           options={[
-            { value: "all", label: `All Categories (${categoriesList.length})` },
-            ...categoriesList.map((cat) => ({
+            { value: "all", label: `All Categories (${categories.length})` },
+            ...categories.map((cat) => ({
               value: cat.slug,
               label: cat.name,
             })),
@@ -85,8 +88,8 @@ export function ListingsSidebar({
           onValueChange={(val) => onCityChange(val === "all" ? "" : val)}
           triggerClassName="bg-slate-50/50 hover:bg-white"
           options={[
-            { value: "all", label: `All Cities (${citiesList.length}+)` },
-            ...citiesList.map((c) => ({
+            { value: "all", label: `All Cities (${cities.length}+)` },
+            ...cities.map((c) => ({
               value: c.slug,
               label: c.name,
             })),

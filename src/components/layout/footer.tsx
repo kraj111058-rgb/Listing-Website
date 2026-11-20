@@ -1,5 +1,8 @@
 "use client";
 
+import { CategorySortBy, SortOrder } from "@/enums";
+import { useActiveCategories } from "@/services/category";
+import { useActiveCities } from "@/services/location";
 import {
   Mail,
   MapPin
@@ -9,45 +12,17 @@ import Link from "next/link";
 import { Container } from "../common";
 
 export default function Footer() {
-  const categoryCol1 = [
-    { name: "Business & Services", slug: "business-services" },
-    { name: "Hotels & Restaurants", slug: "hotels-restaurants" },
-    { name: "Education", slug: "education" },
-    { name: "Travel & Tourism", slug: "travel-tourism" },
-    { name: "Automotive", slug: "automotive" },
-    { name: "Events & Entertainment", slug: "events-entertainment" },
-    { name: "Clothing & Fashion", slug: "clothing-fashion" },
-    { name: "Sports & Fitness", slug: "sports-fitness" },
-  ];
+  const { data: activeCategories = [] } = useActiveCategories({
+    sortBy: CategorySortBy.CREATED_AT,
+    sortOrder: SortOrder.DESC,
+  });
+  const categoryCol1 = activeCategories.slice(0, 8);
+  const categoryCol2 = activeCategories.slice(8, 16);
 
-  const categoryCol2 = [
-    { name: "Health & Beauty", slug: "health-beauty" },
-    { name: "Shopping", slug: "shopping" },
-    { name: "Real Estate", slug: "real-estate" },
-    { name: "Technology & IT", slug: "technology-it" },
-    { name: "Legal & Finance", slug: "legal-finance" },
-    { name: "Home & Garden", slug: "home-garden" },
-    { name: "Advertising & Marketing", slug: "advertising-marketing" },
-    { name: "Pet Services", slug: "pet-services" },
-  ];
-
-  const cityCol1 = [
-    { name: "Mumbai", slug: "mumbai" },
-    { name: "Bangalore", slug: "bengaluru" },
-    { name: "Chennai", slug: "chennai" },
-    { name: "Pune", slug: "pune" },
-    { name: "Jaipur", slug: "jaipur" },
-    { name: "Indore", slug: "indore" },
-  ];
-
-  const cityCol2 = [
-    { name: "Delhi", slug: "new-delhi" },
-    { name: "Hyderabad", slug: "hyderabad" },
-    { name: "Kolkata", slug: "kolkata" },
-    { name: "Ahmedabad", slug: "ahmedabad" },
-    { name: "Lucknow", slug: "lucknow" },
-    { name: "Kochi", slug: "kochi" },
-  ];
+  const { data: activeCities = [] } = useActiveCities();
+  const cityHalf = Math.ceil(Math.min(activeCities.length, 12) / 2);
+  const cityCol1 = activeCities.slice(0, cityHalf);
+  const cityCol2 = activeCities.slice(cityHalf, cityHalf * 2);
 
   const quickLinks = [
     { name: "Submit Free Listing", href: "/listings/create" },
@@ -102,7 +77,8 @@ export default function Footer() {
               </div>
             </Link>
 
-            <p className="text-sm leading-relaxed text-slate-400 font-normal">
+            <p className="text-sm 
+            leading-relaxed text-slate-400 font-normal">
               Discover and connect with local businesses across India. Submit your business listing for free and reach millions of customers.
             </p>
 
@@ -182,7 +158,7 @@ export default function Footer() {
             <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-sm font-normal">
               <ul className="space-y-2.5">
                 {categoryCol1.map((cat) => (
-                  <li key={cat.slug}>
+                  <li key={cat.id || cat.slug}>
                     <Link href={`/listings?category=${cat.slug}`} className="hover:text-white transition-colors">
                       {cat.name}
                     </Link>
@@ -198,7 +174,7 @@ export default function Footer() {
 
               <ul className="space-y-2.5">
                 {categoryCol2.map((cat) => (
-                  <li key={cat.slug}>
+                  <li key={cat.id || cat.slug}>
                     <Link href={`/listings?category=${cat.slug}`} className="hover:text-white transition-colors">
                       {cat.name}
                     </Link>
@@ -216,7 +192,7 @@ export default function Footer() {
             <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-sm font-normal">
               <ul className="space-y-2.5">
                 {cityCol1.map((city) => (
-                  <li key={city.slug}>
+                  <li key={city.id || city.slug}>
                     <Link href={`/listings?city=${city.slug}`} className="hover:text-white transition-colors flex items-center gap-1.5">
                       <MapPin className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                       <span>{city.name}</span>
@@ -227,7 +203,7 @@ export default function Footer() {
 
               <ul className="space-y-2.5">
                 {cityCol2.map((city) => (
-                  <li key={city.slug}>
+                  <li key={city.id || city.slug}>
                     <Link href={`/listings?city=${city.slug}`} className="hover:text-white transition-colors flex items-center gap-1.5">
                       <MapPin className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                       <span>{city.name}</span>

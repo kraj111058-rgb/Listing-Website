@@ -10,7 +10,7 @@ import {
 } from "@/components/common";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { categoryOptions } from "@/data";
+import { useActiveCategories } from "@/services/category";
 import { cn, generateSlug } from "@/lib/utils";
 import type { ListingWizardFormValues } from "@/schemas";
 import { FieldError, FieldLabel } from "@/components/ui/field";
@@ -18,6 +18,7 @@ import { FieldError, FieldLabel } from "@/components/ui/field";
 export function Step1BasicInfo() {
   const { control, setValue } = useFormContext<ListingWizardFormValues>();
   const [tagInput, setTagInput] = useState("");
+  const { data: categories = [], isLoading: isCategoriesLoading } = useActiveCategories();
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -73,10 +74,10 @@ export function Step1BasicInfo() {
             <SelectWithLabel
               id="biz-category"
               label="Category"
-              placeholder="Select a category..."
+              placeholder={isCategoriesLoading ? "Loading categories..." : "Select a category..."}
               value={field.value}
               onValueChange={(val) => field.onChange(val)}
-              options={categoryOptions.map((cat) => ({ value: cat, label: cat }))}
+              options={categories.map((cat) => ({ value: cat.id, label: cat.name }))}
               error={error?.message}
             />
           )}

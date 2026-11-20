@@ -3,7 +3,9 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Container } from "@/components/common";
-import { allListings, categoriesList, citiesList } from "@/data";
+import { allListings } from "@/data";
+import { useActiveCategories } from "@/services/category";
+import { useActiveCities } from "@/services/location";
 import { ListingsHero } from "./listings-hero";
 import { ListingsSidebar } from "./listings-sidebar";
 import { ListingsGrid } from "./listings-grid";
@@ -16,6 +18,9 @@ export function ListingsContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  const { data: categories = [] } = useActiveCategories();
+  const { data: cities = [] } = useActiveCities();
 
   // Read initial params
   const paramQ = searchParams.get("q") || "";
@@ -86,7 +91,7 @@ export function ListingsContent() {
       // 3. City filter
       if (paramCity) {
         const cLower = paramCity.toLowerCase().trim();
-        const matchedCityName = citiesList.find((c) => c.slug === paramCity)?.name.toLowerCase();
+        const matchedCityName = cities.find((c) => c.slug === paramCity)?.name.toLowerCase();
         const cityMatch =
           item.city.toLowerCase().includes(cLower) ||
           (matchedCityName ? item.city.toLowerCase().includes(matchedCityName) : false);
@@ -141,8 +146,8 @@ export function ListingsContent() {
   };
 
   // Find labels for dynamic title
-  const categoryName = categoriesList.find((c) => c.slug === paramCategory)?.name;
-  const cityName = citiesList.find((c) => c.slug === paramCity)?.name;
+  const categoryName = categories.find((c) => c.slug === paramCategory)?.name;
+  const cityName = cities.find((c) => c.slug === paramCity)?.name;
 
   return (
     <div className="w-full min-h-screen bg-slate-50/50 pb-20">

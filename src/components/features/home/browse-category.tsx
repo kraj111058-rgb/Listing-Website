@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { Container } from "@/components/common";
-import { categoriesList } from "@/data";
+import { useActiveCategories } from "@/services/category";
 
 export default function BrowseCategory() {
+  const { data: categories = [], isLoading } = useActiveCategories();
+
   return (
     <section className="py-20 bg-slate-50/70">
       <Container>
@@ -19,22 +22,39 @@ export default function BrowseCategory() {
           </p>
         </div>
 
-        {/* 32 Categories Grid */}
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3.5 md:gap-4">
-          {categoriesList.map((cat) => (
-            <Link
-              key={cat.slug}
-              href={`/listings?category=${cat.slug}`}
-              className="flex flex-col items-center justify-center p-4 bg-white rounded-2xl border border-slate-100 shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group text-center"
-            >
-              <span className="text-3xl sm:text-4xl mb-2.5 group-hover:scale-110 transition-transform">
-                {cat.icon}
-              </span>
-              <p className="text-xs sm:text-sm font-semibold text-slate-700 text-center leading-tight line-clamp-2">
-                {cat.name}
-              </p>
-            </Link>
-          ))}
+        {/* Categories Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5 md:gap-4">
+          {isLoading
+            ? Array.from({ length: 16 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex flex-col items-center justify-center px-4 py-5 bg-white rounded-xl border border-slate-100 shadow-[0_4px_24px_rgba(0,0,0,0.06)] animate-pulse"
+                >
+                  <div className="size-11 sm:size-12 bg-slate-200 rounded-xl mb-2.5" />
+                  <div className="h-3 bg-slate-200 rounded w-16" />
+                </div>
+              ))
+            : categories.map((cat) => (
+                <Link
+                  key={cat.id || cat.slug}
+                  href={`/listings?category=${cat.slug}`}
+                  className="flex flex-col items-center justify-center px-4 py-5.25 bg-white rounded-xl border border-slate-100 shadow-[0_4px_24px_rgba(0,0,0,0.06)] hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group text-center"
+                >
+                  <div className="relative size-12 sm:size-13.5 mb-2.5 group-hover:scale-110 transition-transform flex items-center justify-center">
+                    <Image
+                      src={cat.image}
+                      alt={cat.name}
+                      width={54}
+                      height={54}
+                      className="size-12 sm:size-13.5 object-contain"
+                      loading="lazy"
+                    />
+                  </div>
+                  <p className="text-xs sm:text-sm font-semibold text-slate-700 group-hover:text-indigo-600 transition-colors text-center leading-tight line-clamp-2">
+                    {cat.name}
+                  </p>
+                </Link>
+              ))}
         </div>
 
         {/* View All Button */}

@@ -16,11 +16,18 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Container } from "../common";
+import { CategorySortBy, SortOrder } from "@/enums";
+import { useActiveCategories } from "@/services/category";
 
 export default function Header() {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const { data: activeCategories = [] } = useActiveCategories({
+    sortBy: CategorySortBy.CREATED_AT,
+    sortOrder: SortOrder.DESC,
+  });
+  const previewCategories = activeCategories.slice(0, 5);
 
   return (
     <>
@@ -103,9 +110,10 @@ export default function Header() {
 
                 {categoriesOpen && (
                   <div className="absolute left-0 top-full pt-2 w-80 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                    <div className="bg-white rounded-2xl shadow-2xl border border-slate-100 p-3 space-y-1.5">
+                    <div className="bg-white rounded-xl shadow-2xl border border-slate-100 p-3 space-y-1.5">
                       <Link
                         href="/categories"
+                        onClick={() => setCategoriesOpen(false)}
                         className="flex items-center gap-3.5 px-4 py-3 rounded-xl hover:bg-indigo-50/80 text-slate-800 hover:text-indigo-600 transition-all font-bold text-sm group"
                       >
                         <div className="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors">
@@ -113,37 +121,31 @@ export default function Header() {
                         </div>
                         <div>
                           <div className="font-bold text-slate-900 text-base">All Categories</div>
-                          <div className="text-xs text-slate-500 font-normal">Explore 32+ business categories</div>
+                          <div className="text-xs text-slate-500 font-normal">
+                            Explore {activeCategories.length > 0 ? `${activeCategories.length}+` : "all"} business categories
+                          </div>
                         </div>
                       </Link>
-                      <Link
-                        href="/listings?category=hotels-restaurants"
-                        className="flex items-center gap-3 px-4 py-2 rounded-xl hover:bg-slate-50 text-slate-700 hover:text-indigo-600 transition-all text-sm font-semibold"
-                      >
-                        <span className="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
-                        <span>Hotels &amp; Restaurants</span>
-                      </Link>
-                      <Link
-                        href="/listings?category=health-beauty"
-                        className="flex items-center gap-3 px-4 py-2 rounded-xl hover:bg-slate-50 text-slate-700 hover:text-indigo-600 transition-all text-sm font-semibold"
-                      >
-                        <span className="w-2.5 h-2.5 rounded-full bg-pink-400"></span>
-                        <span>Health &amp; Beauty</span>
-                      </Link>
-                      <Link
-                        href="/listings?category=technology-it"
-                        className="flex items-center gap-3 px-4 py-2 rounded-xl hover:bg-slate-50 text-slate-700 hover:text-indigo-600 transition-all text-sm font-semibold"
-                      >
-                        <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-                        <span>Technology &amp; IT</span>
-                      </Link>
-                      <Link
-                        href="/listings?category=real-estate"
-                        className="flex items-center gap-3 px-4 py-2 rounded-xl hover:bg-slate-50 text-slate-700 hover:text-indigo-600 transition-all text-sm font-semibold"
-                      >
-                        <span className="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
-                        <span>Real Estate</span>
-                      </Link>
+                      {previewCategories.map((cat, idx) => {
+                        const dotColors = [
+                          "bg-amber-400",
+                          "bg-pink-400",
+                          "bg-blue-500",
+                          "bg-purple-500",
+                          "bg-emerald-500",
+                        ];
+                        return (
+                          <Link
+                            key={cat.id || cat.slug}
+                            href={`/listings?category=${cat.slug}`}
+                            onClick={() => setCategoriesOpen(false)}
+                            className="flex items-center gap-3 px-4 py-2 rounded-xl hover:bg-slate-50 text-slate-700 hover:text-indigo-600 transition-all text-sm font-semibold"
+                          >
+                            {/* <span className={`w-2.5 h-2.5 rounded-full ${dotColors[idx % dotColors.length]}`}></span> */}
+                            <span className="truncate">{cat.name}</span>
+                          </Link>
+                        );
+                      })}
                     </div>
                   </div>
                 )}

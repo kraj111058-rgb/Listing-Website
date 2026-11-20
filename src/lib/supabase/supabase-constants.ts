@@ -5,6 +5,9 @@ const DATABASE = {
   CONTACT_INQUIRIES: "contact_inquiries",
   BANNER_AD_INQUIRIES: "banner_ad_inquiries",
   SUBSCRIPTION_PLANS: "subscription_plans",
+  STATES: "states",
+  CITIES: "cities",
+  CATEGORIES: "categories",
 }
 
 const STORAGE = {
@@ -14,6 +17,7 @@ const STORAGE = {
   FOLDERS: {
     BLOG_COVERS: "blogs/covers",
     BLOG_AUTHORS: "blogs/author-avatar",
+    CATEGORIES: "categories",
   },
 }
 

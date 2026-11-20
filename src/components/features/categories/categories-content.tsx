@@ -1,22 +1,19 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Container, AppBreadcrumb } from "@/components/common";
-import { categoriesList } from "@/data";
-import { CategoriesHero } from "./categories-hero";
-import { CategoriesGrid } from "./categories-grid";
+import { AppBreadcrumb, Container } from "@/components/common";
+import { useDebounce } from "@/hooks";
+import { useActiveCategories } from "@/services/category";
+import { useState } from "react";
 import { CategoriesCta } from "./categories-cta";
+import { CategoriesGrid } from "./categories-grid";
+import { CategoriesHero } from "./categories-hero";
 
 export function CategoriesContent() {
   const [searchQuery, setSearchQuery] = useState("");
-
-  const filteredCategories = useMemo(() => {
-    if (!searchQuery.trim()) return categoriesList;
-    const query = searchQuery.toLowerCase().trim();
-    return categoriesList.filter((cat) =>
-      cat.name.toLowerCase().includes(query)
-    );
-  }, [searchQuery]);
+  const debouncedSearch = useDebounce(searchQuery, 400);
+  const { data: categories = [], isLoading } = useActiveCategories({
+    search: debouncedSearch
+  });
 
   return (
     <div className="w-full min-h-screen bg-slate-50/50">
@@ -40,8 +37,8 @@ export function CategoriesContent() {
       <div className="py-10 md:py-14">
         <Container>
           <CategoriesGrid
-            categories={filteredCategories}
-            totalCount={categoriesList.length}
+            categories={categories}
+            isLoading={isLoading}
             searchQuery={searchQuery}
             onClearSearch={() => setSearchQuery("")}
           />
