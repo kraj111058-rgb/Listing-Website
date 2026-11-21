@@ -1,26 +1,38 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, ArrowRight, Loader2, MailCheck } from "lucide-react";
+import { InputWithLabel, Loader } from "@/components/common";
 import { Button } from "@/components/ui/button";
-import { InputWithLabel } from "@/components/common";
 import {
   forgotPasswordFormSchema,
   type ForgotPasswordFormValues,
 } from "@/schemas";
+import { useForgotPassword } from "@/services/auth";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowLeft, ArrowRight, MailCheck } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { AuthCardContainer } from "./auth-card-container";
 
 export function ForgotPasswordForm() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
+  const [countdown, setCountdown] = useState(0);
+
+  useEffect(() => {
+    if (countdown <= 0) return;
+    const timer = setInterval(() => {
+      setCountdown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [countdown]);
+
+  const { mutate: forgotPassword, isPending: isSending } = useForgotPassword();
 
   const {
     control,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordFormSchema),
     defaultValues: {
@@ -28,11 +40,26 @@ export function ForgotPasswordForm() {
     },
   });
 
-  const onSubmit = async (data: ForgotPasswordFormValues) => {
-    // Simulate API request delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    setSubmittedEmail(data.email);
-    setIsSuccess(true);
+  const onSubmit = (data: ForgotPasswordFormValues) => {
+    forgotPassword(data, {
+      onSuccess: () => {
+        setSubmittedEmail(data.email);
+        setIsSuccess(true);
+        setCountdown(30);
+      },
+    });
+  };
+
+  const handleResend = () => {
+    if (!submittedEmail || countdown > 0) return;
+    forgotPassword(
+      { email: submittedEmail },
+      {
+        onSuccess: () => {
+          setCountdown(30);
+        },
+      }
+    );
   };
 
   return (
@@ -53,18 +80,28 @@ export function ForgotPasswordForm() {
                 <span className="font-semibold text-slate-800">
                   {submittedEmail}
                 </span>
-                .
+                . Please click the link inside the email to reset your password.
               </p>
             </div>
 
             <div className="space-y-3 pt-2">
               <Button
                 type="button"
-                onClick={() => setIsSuccess(false)}
+                onClick={handleResend}
+                disabled={isSending || countdown > 0}
                 variant="outline"
-                className="w-full h-12 rounded-[10px] border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm cursor-pointer"
+                className="w-full h-12 rounded-[10px] border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm cursor-pointer flex items-center justify-center gap-2"
               >
-                Resend Link or Try Another Email
+                {isSending ? (
+                  <>
+                    <Loader inline size="sm" />
+                    <span>Resending Link...</span>
+                  </>
+                ) : countdown > 0 ? (
+                  <span>Resend Link in {countdown}s</span>
+                ) : (
+                  <span>Resend Link</span>
+                )}
               </Button>
 
               <div className="pt-2">
@@ -102,7 +139,7 @@ export function ForgotPasswordForm() {
                     label="Email Address"
                     placeholder="name@example.com"
                     error={errors.email?.message}
-                    disabled={isSubmitting}
+                    disabled={isSending}
                     {...field}
                   />
                 )}
@@ -110,12 +147,12 @@ export function ForgotPasswordForm() {
 
               <Button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSending}
                 className="w-full h-12 rounded-[10px] bg-[#5c67f2] hover:bg-[#4f59e0] text-white font-semibold text-sm shadow-md shadow-indigo-500/20 transition-all cursor-pointer flex items-center justify-center gap-2 mt-2"
               >
-                {isSubmitting ? (
+                {isSending ? (
                   <>
-                    <Loader2 size={16} className="animate-spin" />
+                    <Loader inline size="sm" />
                     <span>Sending Reset Link...</span>
                   </>
                 ) : (

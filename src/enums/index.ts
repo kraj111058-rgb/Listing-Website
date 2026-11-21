@@ -4,3 +4,4 @@ export * from "./banner-ad-inquiry.enum";
 export * from "./subscription-plan.enum";
 export * from "./category.enum";
 export * from "./location.enum";
+export * from "./user.enum";

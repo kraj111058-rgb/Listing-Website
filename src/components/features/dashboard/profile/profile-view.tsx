@@ -1,25 +1,34 @@
 "use client";
 
 import { useState } from "react";
-import { initialUserProfile, type UserProfile } from "@/data";
+import { Loader } from "@/components/common";
+import { useCurrentUser } from "@/services/auth";
 import { ProfileSummaryCard } from "./profile-summary-card";
 import { ProfileInfoForm } from "./profile-info-form";
 
 export function ProfileView() {
-  const [profile, setProfile] = useState<UserProfile>(initialUserProfile);
+  const { data: currentUser, isLoading } = useCurrentUser();
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
-  const handleSaveInfo = (updatedFields: Partial<UserProfile>) => {
-    setProfile((prev) => ({
-      ...prev,
-      ...updatedFields,
-    }));
+  if (isLoading) {
+    return <Loader size="md" className="min-h-[350px]" />;
+  }
+
+  const profile = currentUser?.profile;
+
+  const handleAvatarSelect = (file: File) => {
+    setAvatarFile(file);
+    const previewUrl = URL.createObjectURL(file);
+    setAvatarPreview(previewUrl);
   };
 
-  const handleAvatarChange = (newAvatarUrl: string) => {
-    setProfile((prev) => ({
-      ...prev,
-      avatar: newAvatarUrl,
-    }));
+  const handleResetAvatar = () => {
+    if (avatarPreview) {
+      URL.revokeObjectURL(avatarPreview);
+    }
+    setAvatarFile(null);
+    setAvatarPreview(null);
   };
 
   return (
@@ -30,7 +39,8 @@ export function ProfileView() {
         <div className="lg:col-span-4 lg:sticky lg:top-24">
           <ProfileSummaryCard
             profile={profile}
-            onAvatarChange={handleAvatarChange}
+            avatarPreview={avatarPreview}
+            onAvatarSelect={handleAvatarSelect}
           />
         </div>
 
@@ -38,7 +48,8 @@ export function ProfileView() {
         <div className="lg:col-span-8">
           <ProfileInfoForm
             profile={profile}
-            onSave={handleSaveInfo}
+            avatarFile={avatarFile}
+            onResetAvatar={handleResetAvatar}
           />
         </div>
       </div>

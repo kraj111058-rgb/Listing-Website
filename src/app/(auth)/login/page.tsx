@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { LoginForm } from "@/components/features/auth";
+import { Loader } from "@/components/common";
 
 export const metadata: Metadata = {
   title: "Login",
@@ -7,5 +9,9 @@ export const metadata: Metadata = {
 };
 
 export default function LoginPage() {
-  return <LoginForm />;
+  return (
+    <Suspense fallback={<Loader className="py-24" />}>
+      <LoginForm />
+    </Suspense>
+  );
 }

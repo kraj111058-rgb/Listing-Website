@@ -16,6 +16,8 @@ import {
   initialNotifications,
 } from "@/data";
 import { cn } from "@/lib/utils";
+import { UserRole } from "@/enums";
+import { useCurrentUser, useSignOut } from "@/services/auth";
 import {
   ArrowRight,
   Bell,
@@ -116,8 +118,27 @@ export function DashboardTopbar({ onOpenMobile }: DashboardTopbarProps) {
   const pathname = usePathname();
   const router = useRouter();
 
+  const { data: currentUser } = useCurrentUser();
+  const userProfile = currentUser?.profile;
+
+  const displayName = userProfile?.name || currentUser?.email?.split("@")[0] || "User";
+  const userEmail = userProfile?.email || currentUser?.email || "";
+  const avatarUrl = userProfile?.avatar_url || undefined;
+  const userRole = userProfile?.role === UserRole.USER ? "Business Owner" : "";
+
   const [notifications, setNotifications] = useState<NotificationItem[]>(initialNotifications);
   const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
+
+  const { mutate: signOut, isPending: isSigningOut } = useSignOut();
+
+  const handleSignOut = () => {
+    signOut(undefined, {
+      onSuccess: () => {
+        setIsSignOutModalOpen(false);
+        router.push("/");
+      },
+    });
+  };
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -311,7 +332,8 @@ export function DashboardTopbar({ onOpenMobile }: DashboardTopbarProps) {
                 className="rounded-[10px]! cursor-pointer! border-primary border-none! select-none focus:outline-hidden transition-opacity hover:opacity-90 shrink-0"
               >
                 <UserAvatar
-                  name="Rahul Sharma"
+                  name={displayName}
+                  src={avatarUrl}
                   className="size-9! rounded-[10px]! shadow-xs"
                   fallbackClassName="text-sm rounded-[10px]! font-bold bg-primary text-primary-foreground"
                 />
@@ -323,14 +345,15 @@ export function DashboardTopbar({ onOpenMobile }: DashboardTopbarProps) {
               <div className="p-3 bg-muted/30 border-b border-border">
                 <div className="flex items-center gap-2.5">
                   <UserAvatar
-                    name="Rahul Sharma"
+                    name={displayName}
+                    src={avatarUrl}
                     className="size-10! rounded-[10px]! border-primary/20 shadow-xs"
                     fallbackClassName="text-sm rounded-[10px]! font-bold bg-primary text-primary-foreground"
                   />
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-bold text-foreground truncate">Rahul Sharma</h4>
-                    <p className="text-xs text-primary font-semibold">
-                      Business Owner
+                    <h4 className="text-sm font-bold text-foreground truncate">{displayName}</h4>
+                    <p className="text-xs text-primary font-semibold truncate">
+                      {userRole}
                     </p>
                   </div>
                 </div>
@@ -399,13 +422,15 @@ export function DashboardTopbar({ onOpenMobile }: DashboardTopbarProps) {
       {/* Sign Out Confirmation Modal */}
       <AlertModal
         open={isSignOutModalOpen}
-        onOpenChange={setIsSignOutModalOpen}
+        onOpenChange={(open) => {
+          if (!isSigningOut) setIsSignOutModalOpen(open);
+        }}
         title="Sign Out"
         description="Are you sure you want to sign out of your account? You will need to log back in to access the portal."
-        confirmLabel="Sign Out"
+        confirmLabel={isSigningOut ? "Signing Out..." : "Sign Out"}
         cancelLabel="Cancel"
         confirmVariant="destructive"
-        onConfirm={() => router.push("/")}
+        onConfirm={handleSignOut}
       />
     </header>
   );

@@ -1,28 +1,55 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { PopoverClose } from "@/components/ui/popover";
 import {
   ArrowRight,
+  Building2,
   ChevronDown,
   Layers,
+  LayoutDashboard,
+  LogOut,
   Menu,
   Plus,
   ShieldCheck,
   Sparkles,
-  X
+  User,
+  X,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Container } from "../common";
-import { CategorySortBy, SortOrder } from "@/enums";
+import { AlertModal, Container, PopoverMenu, UserAvatar } from "../common";
+import { CategorySortBy, SortOrder, UserRole } from "@/enums";
 import { useActiveCategories } from "@/services/category";
+import { useCurrentUser, useSignOut } from "@/services/auth";
 
 export default function Header() {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
+
+  const { data: authData } = useCurrentUser();
+  const isAuthenticated = !!authData;
+  const userProfile = authData?.profile;
+  const displayName = userProfile?.name || authData?.email?.split("@")[0] || "User";
+  const avatarUrl = userProfile?.avatar_url || undefined;
+  const userRole = userProfile?.role === UserRole.ADMIN ? "Administrator" : "Business Owner";
+
+  const { mutate: signOut, isPending: isSigningOut } = useSignOut();
+
+  const handleSignOut = () => {
+    signOut(undefined, {
+      onSuccess: () => {
+        setIsSignOutModalOpen(false);
+        router.push("/");
+        router.refresh();
+      },
+    });
+  };
+
   const { data: activeCategories = [] } = useActiveCategories({
     sortBy: CategorySortBy.CREATED_AT,
     sortOrder: SortOrder.DESC,
@@ -126,26 +153,16 @@ export default function Header() {
                           </div>
                         </div>
                       </Link>
-                      {previewCategories.map((cat, idx) => {
-                        const dotColors = [
-                          "bg-amber-400",
-                          "bg-pink-400",
-                          "bg-blue-500",
-                          "bg-purple-500",
-                          "bg-emerald-500",
-                        ];
-                        return (
-                          <Link
-                            key={cat.id || cat.slug}
-                            href={`/listings?category=${cat.slug}`}
-                            onClick={() => setCategoriesOpen(false)}
-                            className="flex items-center gap-3 px-4 py-2 rounded-xl hover:bg-slate-50 text-slate-700 hover:text-indigo-600 transition-all text-sm font-semibold"
-                          >
-                            {/* <span className={`w-2.5 h-2.5 rounded-full ${dotColors[idx % dotColors.length]}`}></span> */}
-                            <span className="truncate">{cat.name}</span>
-                          </Link>
-                        );
-                      })}
+                      {previewCategories.map((cat) => (
+                        <Link
+                          key={cat.id || cat.slug}
+                          href={`/listings?category=${cat.slug}`}
+                          onClick={() => setCategoriesOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2 rounded-xl hover:bg-slate-50 text-slate-700 hover:text-indigo-600 transition-all text-sm font-semibold"
+                        >
+                          <span className="truncate">{cat.name}</span>
+                        </Link>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -179,20 +196,120 @@ export default function Header() {
                   <span>Add Listing</span>
                 </Button>
 
-                <Button
-                  variant="ghost"
-                  onClick={() => router.push("/login")}
-                  className="hidden md:inline-flex px-3.5 py-2 text-base font-bold text-slate-700 hover:text-indigo-600 hover:bg-slate-50 transition-colors cursor-pointer rounded-[10px] h-auto"
-                >
-                  <span>Login</span>
-                </Button>
+                {isAuthenticated ? (
+                  <PopoverMenu
+                    align="end"
+                    side="bottom"
+                    sideOffset={6}
+                    contentClass="w-60 p-0 rounded-xl shadow-xl border border-slate-200 bg-white overflow-hidden z-50 select-none"
+                    trigger={
+                      <Button
+                        size="icon"
+                        className="rounded-[10px]! cursor-pointer! border-none! select-none focus:outline-hidden transition-opacity hover:opacity-90 shrink-0 bg-transparent hover:bg-transparent shadow-none"
+                      >
+                        <UserAvatar
+                          name={displayName}
+                          src={avatarUrl}
+                          className="size-10! rounded-[10px]! shadow-xs border border-indigo-100"
+                          fallbackClassName="text-sm rounded-[10px]! font-bold bg-primary text-primary-foreground"
+                        />
+                      </Button>
+                    }
+                  >
+                    <div>
+                      {/* User Header */}
+                      <div className="p-3 bg-slate-50 border-b border-slate-100">
+                        <div className="flex items-center gap-2.5">
+                          <UserAvatar
+                            name={displayName}
+                            src={avatarUrl}
+                            className="size-10! rounded-[10px]! shadow-xs border border-indigo-100"
+                            fallbackClassName="text-sm rounded-[10px]! font-bold bg-primary text-primary-foreground"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-sm font-bold text-slate-900 truncate">{displayName}</h4>
+                            <p className="text-xs text-indigo-600 font-semibold truncate">
+                              {userRole}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
 
-                <Button
-                  onClick={() => router.push("/register")}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-3.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm rounded-[10px] shadow-sm hover:shadow-md transition-all active:scale-95 cursor-pointer h-auto border-0"
-                >
-                  <span>Register</span>
-                </Button>
+                      {/* Navigation Items */}
+                      <div className="p-1.5 space-y-0.5">
+                        {/* 1st: Dashboard */}
+                        <PopoverClose asChild>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => router.push("/dashboard")}
+                            className="w-full justify-start gap-2.5 h-9 px-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 cursor-pointer rounded-lg transition-colors"
+                          >
+                            <LayoutDashboard className="size-4.5 text-slate-400" />
+                            <span>Dashboard</span>
+                          </Button>
+                        </PopoverClose>
+
+                        {/* 2nd: Profile */}
+                        <PopoverClose asChild>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => router.push("/dashboard/profile")}
+                            className="w-full justify-start gap-2.5 h-9 px-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 cursor-pointer rounded-lg transition-colors"
+                          >
+                            <User className="size-4.5 text-slate-400" />
+                            <span>Profile</span>
+                          </Button>
+                        </PopoverClose>
+
+                        {/* 3rd: My Listings */}
+                        <PopoverClose asChild>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => router.push("/dashboard/my-listings")}
+                            className="w-full justify-start gap-2.5 h-9 px-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 cursor-pointer rounded-lg transition-colors"
+                          >
+                            <Building2 className="size-4.5 text-slate-400" />
+                            <span>My Listings</span>
+                          </Button>
+                        </PopoverClose>
+                      </div>
+
+                      <div className="p-1.5 border-t border-slate-100 bg-slate-50/50">
+                        <PopoverClose asChild>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => setIsSignOutModalOpen(true)}
+                            className="w-full justify-start gap-2.5 h-9 px-2.5 text-sm font-medium text-rose-600 hover:bg-rose-50 hover:text-rose-700 cursor-pointer rounded-lg transition-colors"
+                          >
+                            <LogOut className="size-4.5 text-rose-500" />
+                            <span>Sign Out</span>
+                          </Button>
+                        </PopoverClose>
+                      </div>
+                    </div>
+                  </PopoverMenu>
+                ) : (
+                  <>
+                    <Button
+                      variant="ghost"
+                      onClick={() => router.push("/login")}
+                      className="hidden md:inline-flex px-3.5 py-2 text-base font-bold text-slate-700 hover:text-indigo-600 hover:bg-slate-50 transition-colors cursor-pointer rounded-[10px] h-auto"
+                    >
+                      <span>Login</span>
+                    </Button>
+
+                    <Button
+                      onClick={() => router.push("/register")}
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-3.5 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm rounded-[10px] shadow-sm hover:shadow-md transition-all active:scale-95 cursor-pointer h-auto border-0"
+                    >
+                      <span>Register</span>
+                    </Button>
+                  </>
+                )}
               </div>
 
               {/* Mobile Menu Button */}
@@ -256,32 +373,85 @@ export default function Header() {
                   <Plus className="w-5 h-5" />
                   <span>Add Free Listing</span>
                 </Button>
-                <div className="grid grid-cols-2 gap-2.5">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      router.push("/login");
-                    }}
-                    className="w-full flex items-center justify-center py-3 rounded-[10px] border border-slate-200 text-slate-700 hover:text-indigo-600 font-bold hover:bg-slate-50 text-sm h-auto cursor-pointer"
-                  >
-                    Login
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      router.push("/register");
-                    }}
-                    className="w-full flex items-center justify-center py-3 rounded-[10px] bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm shadow-sm h-auto cursor-pointer border-0"
-                  >
-                    Register
-                  </Button>
-                </div>
+                {isAuthenticated ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                      <UserAvatar
+                        name={displayName}
+                        src={avatarUrl}
+                        className="size-10 rounded-[10px]"
+                        fallbackClassName="text-sm font-bold bg-primary text-primary-foreground"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-slate-900 truncate">{displayName}</p>
+                        <p className="text-xs text-indigo-600 font-semibold truncate">{userRole}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          router.push("/dashboard");
+                        }}
+                        className="w-full flex items-center justify-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground py-2.5 rounded-[10px] font-bold text-xs shadow-sm h-auto cursor-pointer"
+                      >
+                        <LayoutDashboard className="size-3.5" />
+                        <span>Dashboard</span>
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          setIsSignOutModalOpen(true);
+                        }}
+                        className="w-full flex items-center justify-center gap-1.5 border border-rose-200 text-rose-600 hover:bg-rose-50 py-2.5 rounded-[10px] font-bold text-xs h-auto cursor-pointer"
+                      >
+                        <LogOut className="size-3.5" />
+                        <span>Sign Out</span>
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        router.push("/login");
+                      }}
+                      className="w-full flex items-center justify-center py-3 rounded-[10px] border border-slate-200 text-slate-700 hover:text-indigo-600 font-bold hover:bg-slate-50 text-sm h-auto cursor-pointer"
+                    >
+                      Login
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        router.push("/register");
+                      }}
+                      className="w-full flex items-center justify-center py-3 rounded-[10px] bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm shadow-sm h-auto cursor-pointer border-0"
+                    >
+                      Register
+                    </Button>
+                  </div>
+                )}
               </div>
             </Container>
           </div>
         )}
       </header>
+
+      {/* Sign Out Confirmation Modal */}
+      <AlertModal
+        open={isSignOutModalOpen}
+        onOpenChange={setIsSignOutModalOpen}
+        isLoading={isSigningOut}
+        title="Sign Out"
+        description="Are you sure you want to sign out of your account?"
+        confirmLabel={isSigningOut ? "Signing Out..." : "Sign Out"}
+        cancelLabel="Cancel"
+        confirmVariant="destructive"
+        onConfirm={handleSignOut}
+      />
     </>
   );
 }

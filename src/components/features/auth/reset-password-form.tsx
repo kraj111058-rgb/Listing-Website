@@ -5,13 +5,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
+import { Eye, EyeOff, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { InputWithLabel } from "@/components/common";
+import { InputWithLabel, Loader } from "@/components/common";
 import {
   resetPasswordFormSchema,
   type ResetPasswordFormValues,
 } from "@/schemas";
+import { useResetPassword } from "@/services/auth";
 import { AuthCardContainer } from "./auth-card-container";
 
 export function ResetPasswordForm() {
@@ -19,10 +20,12 @@ export function ResetPasswordForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const { mutate: resetPassword, isPending: isResetting } = useResetPassword();
+
   const {
     control,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordFormSchema),
     defaultValues: {
@@ -31,10 +34,12 @@ export function ResetPasswordForm() {
     },
   });
 
-  const onSubmit = async (data: ResetPasswordFormValues) => {
-    // Simulate reset password API call
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    router.push("/login");
+  const onSubmit = (data: ResetPasswordFormValues) => {
+    resetPassword(data.password, {
+      onSuccess: () => {
+        router.push("/dashboard");
+      },
+    });
   };
 
   return (
@@ -63,7 +68,7 @@ export function ResetPasswordForm() {
                 label="New Password"
                 placeholder="At least 6 characters"
                 error={errors.password?.message}
-                disabled={isSubmitting}
+                disabled={isResetting}
                 rightElement={
                   <Button
                     type="button"
@@ -91,7 +96,7 @@ export function ResetPasswordForm() {
                 label="Confirm New Password"
                 placeholder="Re-enter your password"
                 error={errors.confirmPassword?.message}
-                disabled={isSubmitting}
+                disabled={isResetting}
                 rightElement={
                   <Button
                     type="button"
@@ -115,12 +120,12 @@ export function ResetPasswordForm() {
           {/* Submit Button */}
           <Button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isResetting}
             className="w-full h-12 rounded-[10px] bg-[#5c67f2] hover:bg-[#4f59e0] text-white font-semibold text-sm shadow-md shadow-indigo-500/20 transition-all cursor-pointer flex items-center justify-center gap-2 mt-2"
           >
-            {isSubmitting ? (
+            {isResetting ? (
               <>
-                <Loader2 size={16} className="animate-spin" />
+                <Loader inline size="sm" />
                 <span>Resetting Password...</span>
               </>
             ) : (

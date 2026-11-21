@@ -3,29 +3,36 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { 
   Eye, 
   EyeOff, 
   ArrowRight, 
-  Loader2 
+  AlertTriangle,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { InputWithLabel } from "@/components/common";
+import { InputWithLabel, Loader } from "@/components/common";
 import { loginFormSchema, type LoginFormValues } from "@/schemas";
+import { useLogin, useResendVerification } from "@/services/auth";
 import { AuthCardContainer } from "./auth-card-container";
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
+  const [unconfirmedEmail, setUnconfirmedEmail] = useState<string | null>(null);
+
+  const { mutate: login, isPending: isLoggingIn } = useLogin();
+  const { mutate: resendVerification, isPending: isResending } = useResendVerification();
 
   const {
     control,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
@@ -35,10 +42,24 @@ export function LoginForm() {
     },
   });
 
-  const onSubmit = async (data: LoginFormValues) => {
-    // Simulate authentication delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    router.push("/dashboard");
+  const onSubmit = (data: LoginFormValues) => {
+    setUnconfirmedEmail(null);
+    login(data, {
+      onSuccess: () => {
+        const redirectTo = searchParams.get("redirectTo") || "/dashboard";
+        router.push(redirectTo);
+      },
+      onError: (err) => {
+        if (err.message.toLowerCase().includes("email not confirmed")) {
+          setUnconfirmedEmail(data.email);
+        }
+      },
+    });
+  };
+
+  const handleResendVerification = () => {
+    if (!unconfirmedEmail) return;
+    resendVerification(unconfirmedEmail);
   };
 
   return (
@@ -54,6 +75,38 @@ export function LoginForm() {
           </p>
         </div>
 
+        {/* Unconfirmed Email Notice Alert Box */}
+        {unconfirmedEmail && (
+          <div className="p-4 rounded-xl bg-amber-50/90 border border-amber-200/90 text-left text-xs text-amber-950 space-y-2.5 animate-in fade-in duration-200">
+            <div className="flex items-start gap-2.5">
+              <AlertTriangle className="size-4.5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="space-y-0.5 min-w-0 flex-1">
+                <p className="font-bold text-amber-900">Email Not Verified</p>
+                <p className="text-amber-800/90 text-[11px] leading-relaxed">
+                  We sent a confirmation link to <strong className="font-semibold">{unconfirmedEmail}</strong>. Please check your inbox (or spam folder) to activate your account.
+                </p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={isResending}
+              onClick={handleResendVerification}
+              className="w-full h-8.5 text-xs font-semibold bg-white border-amber-300 hover:bg-amber-100 text-amber-900 cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              {isResending ? (
+                <>
+                  <Loader inline size="xs" />
+                  <span>Resending Link...</span>
+                </>
+              ) : (
+                <span>Resend Verification Link</span>
+              )}
+            </Button>
+          </div>
+        )}
+
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Email Field */}
@@ -67,7 +120,7 @@ export function LoginForm() {
                 label="Email Address"
                 placeholder="name@example.com"
                 error={errors.email?.message}
-                disabled={isSubmitting}
+                disabled={isLoggingIn}
                 {...field}
               />
             )}
@@ -94,7 +147,7 @@ export function LoginForm() {
                 }
                 placeholder="Enter your password"
                 error={errors.password?.message}
-                disabled={isSubmitting}
+                disabled={isLoggingIn}
                 rightElement={
                   <Button
                     type="button"
@@ -136,12 +189,12 @@ export function LoginForm() {
           {/* Submit Button */}
           <Button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isLoggingIn}
             className="w-full h-12 rounded-[10px] bg-[#5c67f2] hover:bg-[#4f59e0] text-white font-semibold text-sm shadow-md shadow-indigo-500/20 transition-all cursor-pointer flex items-center justify-center gap-2 mt-1"
           >
-            {isSubmitting ? (
+            {isLoggingIn ? (
               <>
-                <Loader2 size={16} className="animate-spin" />
+                <Loader inline size="sm" />
                 <span>Signing In...</span>
               </>
             ) : (
@@ -166,7 +219,7 @@ export function LoginForm() {
           type="button"
           variant="outline"
           onClick={() => {
-            // Placeholder for Google OAuth
+            toast.info("Coming soon!");
           }}
           className="w-full h-12 rounded-[10px] border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 font-medium text-sm flex items-center justify-center gap-3 shadow-2xs transition-colors cursor-pointer"
         >

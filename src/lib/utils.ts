@@ -14,8 +14,22 @@ export function getInitials(name: string): string {
 
 export const generateSlug = (val: string) => {
   return val
-  .toLowerCase()
-  .replace(/\s+/g, "-")
-  .replace(/[^a-z0-9-]/g, "")
-  .replace(/-+/g, "-");
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-");
+}
+
+export function formatDate(
+  date: string | Date | null | undefined,
+  fallback: string = "-"
+): string {
+  if (!date) return fallback
+  const d = new Date(date)
+  if (isNaN(d.getTime())) return fallback
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+  })
 }

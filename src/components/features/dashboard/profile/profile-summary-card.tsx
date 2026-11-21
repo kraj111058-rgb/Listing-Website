@@ -1,50 +1,68 @@
 "use client";
 
+import { useRef } from "react";
 import { UserAvatar } from "@/components/common/user-avatar";
 import { Badge } from "@/components/ui/badge";
-import type { UserProfile } from "@/data";
+import { formatDate } from "@/lib/utils";
+import type { UserProfileData } from "@/services/auth/auth.types";
 import {
-  ACCEPTED_PROFILE_IMAGE_TYPES
+  ACCEPTED_PROFILE_IMAGE_TYPES,
+  MAX_PROFILE_IMAGE_SIZE,
 } from "@/schemas";
 import {
   Building2,
   Calendar,
   Camera,
   Mail,
+  MapPin,
   MessageSquare,
   Pencil,
   Phone,
   User,
 } from "lucide-react";
-import { useRef } from "react";
+import { toast } from "sonner";
 
 interface ProfileSummaryCardProps {
-  profile: UserProfile;
-  onAvatarChange: (newAvatarUrl: string) => void;
+  profile?: UserProfileData | null;
+  avatarPreview?: string | null;
+  onAvatarSelect: (file: File) => void;
 }
 
 export function ProfileSummaryCard({
   profile,
-  onAvatarChange,
+  avatarPreview,
+  onAvatarSelect,
 }: ProfileSummaryCardProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          onAvatarChange(event.target.result as string);
-        }
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    // Reset input value so same file can be re-selected if needed
+    e.target.value = "";
+
+    // 1. Validate File Type
+    if (!ACCEPTED_PROFILE_IMAGE_TYPES.includes(file.type)) {
+      toast.error("Please upload a valid image file (JPG, JPEG, PNG).");
+      return;
     }
+
+    // 2. Validate File Size (5MB)
+    if (file.size > MAX_PROFILE_IMAGE_SIZE) {
+      toast.error("Profile image must be less than 5MB.");
+      return;
+    }
+
+    // Only set file for preview; actual upload happens in onSubmit
+    onAvatarSelect(file);
   };
+
+  const displayAvatar = avatarPreview || profile?.avatar_url;
 
   return (
     <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
-      {/* Clean Card Header Matching Form Card */}
+      {/* Card Header */}
       <div className="p-5 sm:p-6 border-b border-slate-100 bg-slate-50/40">
         <h3 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
           <User className="w-5 h-5 text-indigo-600" />
@@ -63,19 +81,19 @@ export function ProfileSummaryCard({
               title="Click to Change Photo"
             >
               <UserAvatar
-                name={profile.name}
-                src={profile.avatar}
+                name={profile?.name || "User"}
+                src={displayAvatar}
                 className="size-20 rounded-2xl border-2 border-indigo-100 shadow-sm bg-indigo-50 transition-transform group-hover:scale-[1.02]"
                 fallbackClassName="text-2xl font-bold bg-indigo-600 text-white rounded-xl"
               />
-              {/* Smooth hover state on avatar */}
+
               <div className="absolute inset-0 bg-slate-900/40 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white">
                 <Camera className="w-5 h-5" />
                 <span className="text-[10px] font-bold mt-0.5">Upload</span>
               </div>
             </div>
 
-            {/* Top-Right Edit Badge on Avatar - Bold Indigo with Crisp White Ring */}
+            {/* Top-Right Edit Badge on Avatar */}
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
@@ -95,31 +113,44 @@ export function ProfileSummaryCard({
           />
 
           <h3 className="text-base sm:text-lg font-bold text-foreground mt-3.5 tracking-tight">
-            {profile.name}
+            {profile?.name || "User"}
           </h3>
 
           <div className="flex items-center gap-2 mt-1">
-            <Badge variant="indigo" className="text-xs font-semibold py-0.5 px-2">
-              {profile.role}
+            <Badge variant="indigo" className="text-xs font-semibold py-0.5 px-2 capitalize">
+              {profile?.role || "user"}
             </Badge>
           </div>
         </div>
 
-        {/* Quick Contact & Details List */}
+        {/* Contact & Details List */}
         <div className="pt-4 border-t border-slate-100 space-y-3 text-sm text-foreground">
+          {/* Email */}
           <div className="flex items-center gap-2.5">
             <Mail className="w-4 h-4 text-slate-400 shrink-0" />
-            <span className="truncate">{profile.email}</span>
+            <span className="truncate">{profile?.email || "-"}</span>
           </div>
 
-          <div className="flex items-center gap-2.5">
-            <Phone className="w-4 h-4 text-slate-400 shrink-0" />
-            <span>+91 {profile.phone}</span>
-          </div>
+          {/* Phone */}
+          {profile?.phone && (
+            <div className="flex items-center gap-2.5">
+              <Phone className="w-4 h-4 text-slate-400 shrink-0" />
+              <span>+91 {profile.phone}</span>
+            </div>
+          )}
 
+          {/* City */}
+          {profile?.city && (
+            <div className="flex items-center gap-2.5">
+              <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
+              <span>{profile.city}</span>
+            </div>
+          )}
+
+          {/* Member since */}
           <div className="flex items-center gap-2.5">
             <Calendar className="w-4 h-4 text-slate-400 shrink-0" />
-            <span>Member since {profile.memberSince}</span>
+            <span>Member since {formatDate(profile?.created_at)}</span>
           </div>
         </div>
 
@@ -128,7 +159,7 @@ export function ProfileSummaryCard({
           <div className="p-3.5 rounded-xl bg-slate-50/80 border border-slate-200 shadow-2xs hover:bg-slate-50 transition-colors">
             <div className="flex items-center justify-center gap-1.5 text-indigo-600 font-bold text-base">
               <Building2 className="w-4.5 h-4.5 text-indigo-500" />
-              <span>{profile.activeListingsCount}</span>
+              <span>0</span>
             </div>
             <p className="text-xs font-semibold text-slate-500 mt-0.5">
               Listings
@@ -138,7 +169,7 @@ export function ProfileSummaryCard({
           <div className="p-3.5 rounded-xl bg-slate-50/80 border border-slate-200 shadow-2xs hover:bg-slate-50 transition-colors">
             <div className="flex items-center justify-center gap-1.5 text-sky-600 font-bold text-base">
               <MessageSquare className="w-4.5 h-4.5 text-sky-500" />
-              <span>{profile.totalInquiriesCount}</span>
+              <span>0</span>
             </div>
             <p className="text-xs font-semibold text-slate-500 mt-0.5">
               Inquiries

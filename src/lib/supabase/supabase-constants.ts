@@ -18,10 +18,11 @@ const STORAGE = {
     BLOG_COVERS: "blogs/covers",
     BLOG_AUTHORS: "blogs/author-avatar",
     CATEGORIES: "categories",
+    USER_PROFILE: "user-profile",
   },
 }
 
 export const SUPABASE_CONSTANTS = {
   DB_TABLES: DATABASE,
   STORAGE: STORAGE,
-} as const
+} as const;
