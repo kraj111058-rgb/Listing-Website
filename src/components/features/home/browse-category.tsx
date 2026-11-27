@@ -7,7 +7,9 @@ import { Container } from "@/components/common";
 import { useActiveCategories } from "@/services/category";
 
 export default function BrowseCategory() {
-  const { data: categories = [], isLoading } = useActiveCategories();
+  const { data: categories = [], isLoading } = useActiveCategories({
+    pageLimit: 18,
+  });
 
   return (
     <section className="py-20 bg-slate-50/70">
@@ -25,7 +27,7 @@ export default function BrowseCategory() {
         {/* Categories Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5 md:gap-4">
           {isLoading
-            ? Array.from({ length: 16 }).map((_, i) => (
+            ? Array.from({ length: 18 }).map((_, i) => (
                 <div
                   key={i}
                   className="flex flex-col items-center justify-center px-4 py-5 bg-white rounded-xl border border-slate-100 shadow-[0_4px_24px_rgba(0,0,0,0.06)] animate-pulse"

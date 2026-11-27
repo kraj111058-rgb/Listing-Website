@@ -1,10 +1,11 @@
 import type { CategorySortBy, CategoryStatus, SortOrder } from "@/enums";
+import type { PaginationParams } from "@/types";
 
-export type CategoryQueryParams = {
+export interface CategoryQueryParams extends PaginationParams {
   search?: string;
   sortBy?: CategorySortBy;
   sortOrder?: SortOrder;
-};
+}
 
 export interface CategoryData {
   id: string;

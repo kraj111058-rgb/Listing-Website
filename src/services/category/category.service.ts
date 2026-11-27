@@ -20,7 +20,16 @@ export const categoryService = {
       ? params.sortOrder === SortOrder.ASC
       : sortBy === CategorySortBy.NAME;
 
-    const { data, error } = await query.order(sortBy, { ascending });
+    let finalQuery = query.order(sortBy, { ascending });
+
+    if (params?.pageLimit) {
+      const page = params.page ?? 1;
+      const from = (page - 1) * params.pageLimit;
+      const to = from + params.pageLimit - 1;
+      finalQuery = finalQuery.range(from, to);
+    }
+
+    const { data, error } = await finalQuery;
 
     if (error) throw new Error(error.message);
     return (data as CategoryData[]) || [];
