@@ -118,7 +118,7 @@ export function LoginForm() {
                 id="login-email"
                 type="email"
                 label="Email Address"
-                placeholder="name@example.com"
+                placeholder="name@gmail.com"
                 error={errors.email?.message}
                 disabled={isLoggingIn}
                 {...field}

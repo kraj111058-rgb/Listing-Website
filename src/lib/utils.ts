@@ -33,3 +33,11 @@ export function formatDate(
     year: "numeric",
   })
 }
+
+export const GMAIL_EMAIL_REGEX = /^[a-z0-9._-]+@gmail\.com$/
+
+export const GMAIL_ONLY_ERROR_MESSAGE = "Please enter a valid Gmail address."
+
+export function isGmailEmail(email: string): boolean {
+  return GMAIL_EMAIL_REGEX.test(email.trim().toLowerCase())
+}

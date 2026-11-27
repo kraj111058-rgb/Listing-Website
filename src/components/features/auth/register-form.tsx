@@ -179,7 +179,7 @@ export function RegisterForm() {
                     id="register-email"
                     type="email"
                     label="Email Address"
-                    placeholder="name@example.com"
+                    placeholder="name@gmail.com"
                     error={errors.email?.message}
                     disabled={isRegistering}
                     {...field}

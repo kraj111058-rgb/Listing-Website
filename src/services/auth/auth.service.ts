@@ -1,5 +1,6 @@
 import { UserRole, UserStatus } from "@/enums";
 import { supabase, SUPABASE_CONSTANTS } from "@/lib/supabase";
+import { GMAIL_ONLY_ERROR_MESSAGE, isGmailEmail } from "@/lib/utils";
 import type {
   CurrentUserResponse,
   ForgotPasswordPayload,
@@ -10,11 +11,22 @@ import type {
   UserStatusCheckResponse,
 } from "./auth.types";
 
+const ensureGmailEmail = (email: string): string => {
+  const cleanEmail = email.trim().toLowerCase();
+  if (!cleanEmail) {
+    throw new Error("Email address is required.");
+  }
+  if (!isGmailEmail(cleanEmail)) {
+    throw new Error(GMAIL_ONLY_ERROR_MESSAGE);
+  }
+  return cleanEmail;
+};
+
 
 export const authService = {
   // 1. Sign In with Email & Password
   signIn: async ({ email, password }: SignInPayload) => {
-    const cleanEmail = email.trim().toLowerCase();
+    const cleanEmail = ensureGmailEmail(email);
 
     // Check account status via RPC first
     const { data: statusData } = await supabase.rpc("check_user_email_status", {
@@ -22,7 +34,15 @@ export const authService = {
     });
     const statusCheck = statusData as UserStatusCheckResponse | null;
 
-    if (statusCheck?.exists && statusCheck?.status === UserStatus.INACTIVE) {
+    if (!statusCheck?.exists) {
+      throw new Error("No account found with this email address. Please register first.");
+    }
+
+    if (statusCheck.role !== UserRole.USER) {
+      throw new Error("Invalid login credentials.");
+    }
+
+    if (statusCheck.status === UserStatus.INACTIVE) {
       throw new Error("Your account has been deactivated. Please contact support.");
     }
 
@@ -56,7 +76,7 @@ export const authService = {
 
   // 2. Sign Up with Email, Mobile & Password
   signUp: async ({ fullName, email, phone, password }: SignUpPayload) => {
-    const cleanEmail = email.trim().toLowerCase();
+    const cleanEmail = ensureGmailEmail(email);
     const cleanPhone = phone.trim();
 
     // Check if phone number is already registered in public.users
@@ -109,11 +129,7 @@ export const authService = {
 
   // 4. Send Password Reset Email
   forgotPassword: async (payload: ForgotPasswordPayload) => {
-    const cleanEmail = payload.email.trim().toLowerCase();
-
-    if (!cleanEmail) {
-      throw new Error("Email address is required.");
-    }
+    const cleanEmail = ensureGmailEmail(payload.email);
 
     // Verify account exists & is active in database before proceeding
     const { data: statusData } = await supabase.rpc("check_user_email_status", {
@@ -154,7 +170,7 @@ export const authService = {
 
   // 6. Resend Email Verification Link
   resendVerificationEmail: async (email: string) => {
-    const cleanEmail = email.trim().toLowerCase();
+    const cleanEmail = ensureGmailEmail(email);
 
     // Verify account exists & is active in database before proceeding
     const { data: statusData } = await supabase.rpc("check_user_email_status", {

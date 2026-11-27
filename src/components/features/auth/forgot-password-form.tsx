@@ -137,7 +137,7 @@ export function ForgotPasswordForm() {
                     id="forgot-email"
                     type="email"
                     label="Email Address"
-                    placeholder="name@example.com"
+                    placeholder="name@gmail.com"
                     error={errors.email?.message}
                     disabled={isSending}
                     {...field}

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { GMAIL_ONLY_ERROR_MESSAGE, isGmailEmail } from "@/lib/utils";
 
 export const registerFormSchema = z
   .object({
@@ -8,8 +9,10 @@ export const registerFormSchema = z
       .max(60, "Full name must be less than 60 characters"),
     email: z
       .string()
+      .trim()
       .min(1, "Email address is required")
-      .email("Please enter a valid email address"),
+      .email("Please enter a valid email address")
+      .refine(isGmailEmail, GMAIL_ONLY_ERROR_MESSAGE),
     phone: z
       .string()
       .min(1, "Phone number is required")
